@@ -5,7 +5,7 @@ services:
     container_name: threat-telemetry-db
     restart: unless-stopped
     ports:
-      - '5432:5432'
+      - '5434:5432'
     environment:
       POSTGRES_USER: threat_user
       POSTGRES_PASSWORD: threat_pass_dev
