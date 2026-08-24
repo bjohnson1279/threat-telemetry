@@ -1,0 +1,30 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ThreatIndicator {
+  id                String   @id @default(uuid()) @db.Uuid
+  indicatorValue    String   @map("indicator_value")
+  indicatorType     String   @map("indicator_type")
+  severity          String   @default("LOW")
+  confidenceScore   Int      @default(0) @map("confidence_score")
+  enrichmentSummary String?  @map("enrichment_summary") @db.Text
+  mitreTechniques   String[] @map("mitre_techniques")
+  rawPayload        Json     @map("raw_payload") @db.JsonB
+  firstSeen         DateTime @default(now()) @map("first_seen")
+  lastSeen          DateTime @default(now()) @map("last_seen")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("threat_indicators")
+}
+
+// Raw SQL Migrations to apply manually or in initial migration:
+// CREATE INDEX idx_mitre_techniques ON threat_indicators USING GIN (mitre_techniques);
+// CREATE INDEX idx_type_score ON threat_indicators (indicator_type, confidence_score);
+// CREATE INDEX idx_severity ON threat_indicators (severity);
+// CREATE INDEX idx_indicator_value ON threat_indicators (indicator_value);

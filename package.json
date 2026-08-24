@@ -1,0 +1,20 @@
+{
+  "name": "threat-telemetry",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @threat-telemetry/api dev",
+    "dev:web": "pnpm --filter @threat-telemetry/web dev",
+    "dev:worker": "pnpm --filter @threat-telemetry/worker dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @threat-telemetry/api prisma:generate",
+    "db:push": "pnpm --filter @threat-telemetry/api prisma:push",
+    "db:seed": "pnpm --filter @threat-telemetry/api prisma:seed",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

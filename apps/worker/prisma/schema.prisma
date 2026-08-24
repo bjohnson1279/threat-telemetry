@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ThreatIndicator {
+  id               String   @id @default(uuid())
+  value            String   @unique
+  type             String
+  severity         String
+  rawPayload       Json
+  enrichmentSummary Json?
+  lastSeen         DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
