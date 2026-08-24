@@ -253,7 +253,7 @@ async function main() {
     }
   ];
 
-  console.log(\`Inserting \${mockIndicators.length} mock indicators...\`);
+  console.log(`Inserting ${mockIndicators.length} mock indicators...`);
   
   await prisma.threatIndicator.createMany({
     data: mockIndicators.map(ind => ({

@@ -18,10 +18,10 @@ describe('Worker tests', () => {
     const service = new ThreatEnrichmentService({ provider: 'openai', apiKey: 'test' });
     const result = await service.enrich({ value: '1.2.3.4', type: 'IP', rawPayload: {} });
     
-    expect(result.tags).toBeDefined();
-    expect(result.confidence).toBeDefined();
-    expect(result.summary).toBeDefined();
-    expect(result.tlp).toBeDefined();
+    expect(result.severity).toBeDefined();
+    expect(result.confidenceScore).toBeDefined();
+    expect(result.analystBrief).toBeDefined();
+    expect(result.mitreTechniques).toBeDefined();
   });
   
   it('Enrichment service falls back after retries', async () => {
@@ -39,13 +39,13 @@ describe('Worker tests', () => {
   it('Worker processes batch successfully', async () => {
     const prismaMock = {
       threatIndicator: {
-        findMany: vi.fn().mockResolvedValue([{ id: '1', value: '1.2.3.4', type: 'IP', rawPayload: {} }]),
+        findMany: vi.fn().mockResolvedValue([{ id: '1', indicatorValue: '1.2.3.4', indicatorType: 'IP_ADDRESS', rawPayload: {} }]),
         update: vi.fn().mockResolvedValue({}),
       }
     };
     
     const service = new ThreatEnrichmentService({ provider: 'openai', apiKey: 'test' });
-    vi.spyOn(service, 'enrich').mockResolvedValue({ tags: ['test'], confidence: 1, summary: 'test', tlp: 'WHITE' });
+    vi.spyOn(service, 'enrich').mockResolvedValue({ severity: 'LOW' as any, confidenceScore: 1, analystBrief: 'test', mitreTechniques: [] });
     
     const loggerMock = { info: vi.fn(), error: vi.fn(), warn: vi.fn() };
     
@@ -58,7 +58,7 @@ describe('Worker tests', () => {
   it('Worker handles failure during batch processing', async () => {
     const prismaMock = {
       threatIndicator: {
-        findMany: vi.fn().mockResolvedValue([{ id: '1', value: 'bad', type: 'IP', rawPayload: {} }]),
+        findMany: vi.fn().mockResolvedValue([{ id: '1', indicatorValue: 'bad', indicatorType: 'IP_ADDRESS', rawPayload: {} }]),
         update: vi.fn().mockResolvedValue({}),
       }
     };

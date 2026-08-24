@@ -50,22 +50,25 @@ export class EnrichmentWorker {
           unenriched.map(async (indicator) => {
             try {
               const enrichment = await this.enrichmentService.enrich({
-                value: indicator.value,
-                type: indicator.type,
+                value: indicator.indicatorValue,
+                type: indicator.indicatorType,
                 rawPayload: indicator.rawPayload,
               });
 
               await this.prisma.threatIndicator.update({
                 where: { id: indicator.id },
                 data: {
-                  enrichmentSummary: enrichment as any,
+                  enrichmentSummary: enrichment.analystBrief,
+                  severity: enrichment.severity,
+                  confidenceScore: enrichment.confidenceScore,
+                  mitreTechniques: enrichment.mitreTechniques,
                   lastSeen: new Date(),
                 },
               });
               
-              this.logger.info(`Enriched ${indicator.value}`);
+              this.logger.info(`Enriched ${indicator.indicatorValue}`);
             } catch (err) {
-              this.logger.error({ err, indicator: indicator.value }, 'Failed to process indicator');
+              this.logger.error({ err, indicator: indicator.indicatorValue }, 'Failed to process indicator');
             }
           })
         );
@@ -87,12 +90,12 @@ export class EnrichmentWorker {
       this.logger.info(`Fetched ${newIndicators.length} mock indicators`);
 
       for (const ind of newIndicators) {
-        await this.prisma.threatIndicator.upsert({
-          where: { value: ind.value },
-          create: ind,
-          update: {
+        await this.prisma.threatIndicator.create({
+          data: {
+            indicatorValue: ind.value,
+            indicatorType: ind.type,
+            rawPayload: ind.rawPayload || {},
             lastSeen: new Date(),
-            rawPayload: ind.rawPayload,
           },
         });
       }

@@ -36,7 +36,7 @@ export class ThreatEnrichmentService {
 
     while (attempt < maxRetries) {
       try {
-        logger.info(\`Enrichment attempt \${attempt + 1} for indicator \${indicator.value}\`);
+        logger.info(`Enrichment attempt ${attempt + 1} for indicator ${indicator.value}`);
         
         let rawResponse: string;
         
@@ -51,10 +51,10 @@ export class ThreatEnrichmentService {
         
         return result;
       } catch (error) {
-        logger.warn(\`Enrichment attempt \${attempt + 1} failed: \`, error);
+        logger.warn(`Enrichment attempt \${attempt + 1} failed: `, error);
         attempt++;
         if (attempt >= maxRetries) {
-          logger.error(\`All \${maxRetries} enrichment attempts failed for \${indicator.value}\`);
+          logger.error(`All \${maxRetries} enrichment attempts failed for \${indicator.value}`);
           break;
         }
         // Exponential backoff
@@ -72,7 +72,7 @@ export class ThreatEnrichmentService {
   }
 
   private buildPrompt(indicator: EnrichmentIndicator): string {
-    return \`Analyze the following threat indicator (IOC) and provide an assessment.
+    return `Analyze the following threat indicator (IOC) and provide an assessment.
     
 Indicator Type: \${indicator.type}
 Indicator Value: \${indicator.value}
@@ -86,7 +86,7 @@ Return ONLY a JSON object with the following exact structure:
   "analystBrief": string (a concise 2-sentence summary of the threat and potential impact)
 }
 
-Do not include markdown blocks or any other text outside the JSON.\`;
+Do not include markdown blocks or any other text outside the JSON.`;
   }
 
   private extractJSON(text: string): any {
@@ -104,7 +104,7 @@ Do not include markdown blocks or any other text outside the JSON.\`;
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: \`Bearer \${this.config.apiKey}\`,
+        Authorization: `Bearer \${this.config.apiKey}`,
       },
       body: JSON.stringify({
         model: this.config.model,
@@ -115,7 +115,7 @@ Do not include markdown blocks or any other text outside the JSON.\`;
     });
 
     if (!response.ok) {
-      throw new Error(\`OpenAI API error: \${response.statusText}\`);
+      throw new Error(`OpenAI API error: \${response.statusText}`);
     }
 
     const data = await response.json();
@@ -139,7 +139,7 @@ Do not include markdown blocks or any other text outside the JSON.\`;
     });
 
     if (!response.ok) {
-      throw new Error(\`Anthropic API error: \${response.statusText}\`);
+      throw new Error(`Anthropic API error: \${response.statusText}`);
     }
 
     const data = await response.json();

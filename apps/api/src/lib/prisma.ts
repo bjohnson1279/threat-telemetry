@@ -9,6 +9,6 @@ export const prisma = new PrismaClient({
 
 if (isDev) {
   prisma.$on('query' as never, (e: any) => {
-    logger.debug(\`Query: \${e.query}\`);
+    logger.debug(`Query: \${e.query}`);
   });
 }

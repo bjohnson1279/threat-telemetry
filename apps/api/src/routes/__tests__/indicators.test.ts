@@ -44,7 +44,7 @@ describe('Indicators Routes', () => {
     );
     
     if (!routeInfo) {
-      throw new Error(\`Route \${method} \${path} not found\`);
+      throw new Error(`Route ${method} ${path} not found`);
     }
 
     const handlers = routeInfo.route.stack.map((s: any) => s.handle);

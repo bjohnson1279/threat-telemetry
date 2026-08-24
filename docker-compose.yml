@@ -18,5 +18,52 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: threat-telemetry-api
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      - DATABASE_URL=postgresql://threat_user:threat_pass_dev@postgres:5432/threat_telemetry
+      - PORT=8080
+      - LLM_PROVIDER=openai
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-placeholder}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-sk-ant-placeholder}
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: threat-telemetry-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://threat_user:threat_pass_dev@postgres:5432/threat_telemetry
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-placeholder}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-sk-ant-placeholder}
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: threat-telemetry-web
+    restart: unless-stopped
+    ports:
+      - '5173:80'
+    depends_on:
+      - api
+
 volumes:
   pgdata:

@@ -11,7 +11,7 @@ import { logger } from './lib/logger.js';
 import { prisma } from './lib/prisma.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(helmet());
@@ -34,7 +34,7 @@ app.use('/api/v1', routes);
 app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
-  logger.info(\`Server is running on port \${PORT}\`);
+  logger.info(`Server is running on port \${PORT}`);
 });
 
 // Graceful Shutdown
