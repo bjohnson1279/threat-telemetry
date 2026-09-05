@@ -8,6 +8,7 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  const isDev = process.env.NODE_ENV !== 'production';
   logger.error(err);
 
   if (err instanceof ZodError) {
@@ -27,7 +28,16 @@ export const errorHandler = (
     return;
   }
 
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error',
+  const status = err.status || 500;
+
+  // Sentinel: Medium - Fix Information Leakage
+  // Only expose raw error messages in development or if the status is not 500
+  // to avoid leaking sensitive internal details like stack traces or service failures.
+  const message = (status === 500 && !isDev)
+    ? 'Internal Server Error'
+    : (err.message || 'Internal Server Error');
+
+  res.status(status).json({
+    error: message,
   });
 };
