@@ -79,7 +79,8 @@ export const IndicatorTable: React.FC = () => {
                     <td className="p-4 text-threat-muted text-xs whitespace-nowrap">{new Date(ind.firstSeen).toLocaleDateString()}</td>
                     <td className="p-4 text-right">
                       <button 
-                        className="px-3 py-1 text-xs bg-threat-border hover:bg-threat-accent hover:text-white rounded transition-colors"
+                        aria-label={`View indicator ${ind.value}`}
+                        className="px-3 py-1 text-xs bg-threat-border hover:bg-threat-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors"
                         onClick={(e) => { e.stopPropagation(); setSelectedIndicator(ind); }}
                       >
                         View
