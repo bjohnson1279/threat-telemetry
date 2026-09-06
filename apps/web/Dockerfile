@@ -4,9 +4,7 @@ WORKDIR /app
 
 RUN npm install -g pnpm@9.15.4
 
-COPY package.json pnpm-workspace.yaml tsconfig.base.json ./
-COPY packages/shared packages/shared
-COPY apps/web apps/web
+COPY . .
 
 RUN pnpm install
 RUN pnpm --filter @threat-telemetry/shared build

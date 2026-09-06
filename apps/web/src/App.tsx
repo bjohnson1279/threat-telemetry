@@ -1,4 +1,3 @@
-import React from 'react';
 import { StatsCards } from './components/StatsCards';
 import { IndicatorTable } from './components/IndicatorTable';
 

@@ -1,7 +1,7 @@
-import * as crypto from 'node:crypto';
 import { IndicatorType } from './types.js';
 
 export function generateId(): string {
+  // Use global crypto object available in browsers and Node 20+
   return crypto.randomUUID();
 }
 

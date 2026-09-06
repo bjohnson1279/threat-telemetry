@@ -1,5 +1,6 @@
 export enum IndicatorType {
   IP_ADDRESS = 'IP_ADDRESS',
+  IP = 'IP',
   DOMAIN = 'DOMAIN',
   URL = 'URL',
   SHA256 = 'SHA256',
@@ -12,6 +13,7 @@ export enum IndicatorType {
 export enum ThreatSeverity {
   LOW = 'LOW',
   MED = 'MED',
+  MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
 }

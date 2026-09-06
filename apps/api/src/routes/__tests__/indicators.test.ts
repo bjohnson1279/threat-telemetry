@@ -50,15 +50,18 @@ describe('Indicators Routes', () => {
     const handlers = routeInfo.route.stack.map((s: any) => s.handle);
     
     let i = 0;
-    const nextMock = (err?: any) => {
-      if (err) return next(err);
-      i++;
+    const runNext = async (err?: any): Promise<void> => {
+      if (err) {
+        next(err);
+        return;
+      }
       if (i < handlers.length) {
-        handlers[i](req, res, nextMock);
+        const handler = handlers[i++];
+        await handler(req, res, runNext);
       }
     };
     
-    await handlers[0](req, res, nextMock);
+    await runNext();
   };
 
   const mockResponse = () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ThreatIndicator, PaginatedResponse, ThreatIndicatorFilter } from '@threat-telemetry/shared';
+import { ThreatIndicator, ThreatIndicatorFilter } from '@threat-telemetry/shared';
 import { fetchIndicators } from '../lib/api';
 
 export function useIndicators() {

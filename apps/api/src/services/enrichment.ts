@@ -57,8 +57,9 @@ export class ThreatEnrichmentService {
           logger.error(`All \${maxRetries} enrichment attempts failed for \${indicator.value}`);
           break;
         }
-        // Exponential backoff
-        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        // Exponential backoff (fast in test environment)
+        const delay = (this.config as any).retryDelayMs ?? (process.env.NODE_ENV === 'test' ? 10 : Math.pow(2, attempt) * 1000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 

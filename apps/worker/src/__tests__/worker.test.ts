@@ -50,6 +50,7 @@ describe('Worker tests', () => {
     const loggerMock = { info: vi.fn(), error: vi.fn(), warn: vi.fn() };
     
     const worker = new EnrichmentWorker(prismaMock as any, service, loggerMock as any);
+    (worker as any).isRunning = true;
     await worker['runEnrichmentLoop']();
     
     expect(prismaMock.threatIndicator.update).toHaveBeenCalled();
@@ -69,6 +70,7 @@ describe('Worker tests', () => {
     const loggerMock = { info: vi.fn(), error: vi.fn(), warn: vi.fn() };
     
     const worker = new EnrichmentWorker(prismaMock as any, service, loggerMock as any);
+    (worker as any).isRunning = true;
     await worker['runEnrichmentLoop']();
     
     expect(loggerMock.error).toHaveBeenCalled();

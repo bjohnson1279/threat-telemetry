@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { ThreatIndicator } from '@threat-telemetry/shared';
 import { SeverityBadge } from './SeverityBadge';
 import { ConfidenceBar } from './ConfidenceBar';
-import { MitreTags } from './MitreTags';
 import { triggerEnrichment } from '../lib/api';
 
 interface IndicatorDrawerProps {
@@ -34,7 +33,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
       
       <div className="relative w-full max-w-xl h-full bg-threat-surface border-l border-threat-border shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0">
         <div className="flex items-center justify-between p-6 border-b border-threat-border bg-threat-bg/50">
-          <h2 className="text-xl font-mono text-threat-text break-all pr-4">{indicator.value}</h2>
+          <h2 className="text-xl font-mono text-threat-text break-all pr-4">{indicator.indicatorValue}</h2>
           <button onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none">&times;</button>
         </div>
 
@@ -44,7 +43,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-threat-muted mb-1">Type</p>
-                <span className="px-2 py-1 bg-threat-border text-threat-text rounded text-xs font-mono">{indicator.type}</span>
+                <span className="px-2 py-1 bg-threat-border text-threat-text rounded text-xs font-mono">{indicator.indicatorType}</span>
               </div>
               <div>
                 <p className="text-sm text-threat-muted mb-1">Severity</p>
@@ -65,13 +64,13 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             </div>
           </section>
 
-          {indicator.enrichmentData?.summary && (
+          {indicator.enrichmentSummary && (
             <section>
               <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
                 <span className="mr-2">🤖</span> AI Analyst Brief
               </h3>
               <div className="bg-threat-bg border border-threat-border rounded-lg p-4 text-sm leading-relaxed text-threat-text/90">
-                {indicator.enrichmentData.summary}
+                {indicator.enrichmentSummary}
               </div>
             </section>
           )}
