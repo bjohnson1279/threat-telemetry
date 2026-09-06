@@ -35,7 +35,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
       <div className="relative w-full max-w-xl h-full bg-threat-surface border-l border-threat-border shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0">
         <div className="flex items-center justify-between p-6 border-b border-threat-border bg-threat-bg/50">
           <h2 className="text-xl font-mono text-threat-text break-all pr-4">{indicator.value}</h2>
-          <button onClick={onClose} className="text-threat-muted hover:text-threat-text text-2xl leading-none">&times;</button>
+          <button onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none">&times;</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -103,7 +103,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           <button 
             onClick={handleEnrich} 
             disabled={enriching}
-            className="w-full py-2 px-4 bg-threat-accent hover:bg-blue-600 text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-2 px-4 bg-threat-accent hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-offset-2 focus-visible:ring-offset-threat-bg text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {enriching ? 'Enriching...' : '✨ Trigger Enrichment'}
           </button>
