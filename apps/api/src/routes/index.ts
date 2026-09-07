@@ -1,7 +1,7 @@
-import { Router, type Router as ExpressRouter } from 'express';
+import { Router } from 'express';
 import indicatorsRouter from './indicators.js';
 
-const router: ExpressRouter = Router();
+const router: Router = Router();
 
 router.use('/indicators', indicatorsRouter);
 // Note: The prompt mentions /api/v1/ingest in indicators route, we'll map that there, or mount it here.
