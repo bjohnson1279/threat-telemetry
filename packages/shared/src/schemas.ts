@@ -32,7 +32,7 @@ export const threatIndicatorFilterSchema = z.object({
   maxConfidence: z.number().min(0).max(100).optional(),
   page: z.number().min(1).optional(),
   pageSize: z.number().min(1).optional(),
-  sortBy: z.string().optional(),
+  sortBy: z.enum(['createdAt', 'confidenceScore', 'severity', 'indicatorValue']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
 

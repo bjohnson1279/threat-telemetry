@@ -12,7 +12,7 @@ import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
 
-const router: Router = Router();
+const router = Router();
 
 // Endpoint: POST /api/v1/ingest
 router.post(
@@ -36,12 +36,12 @@ router.post(
         return;
       }
 
-      const formattedIndicators = rawIndicators.map((ind: any) => ({
+      const formattedIndicators = rawIndicators.map((ind) => ({
         indicatorValue: normalizeIndicatorValue(ind.value, ind.type),
         indicatorType: ind.type,
-        severity: 'LOW' as any,
+        severity: 'LOW',
         confidenceScore: 0,
-        rawPayload: ind.rawPayload || ind.metadata || {},
+        rawPayload: ind.rawPayload || {},
         mitreTechniques: [],
       }));
 
@@ -56,7 +56,7 @@ router.post(
           chunk.map((data) => prisma.threatIndicator.create({ data }))
         );
         ingestedCount += created.length;
-        allIds.push(...created.map((c: any) => c.id));
+        allIds.push(...created.map((c) => c.id));
       }
 
       res.status(201).json({
@@ -87,7 +87,7 @@ router.get(
         sortOrder = 'desc',
       } = req.query as any;
 
-      const where: any = {};
+      const where: Prisma.ThreatIndicatorWhereInput = {};
 
       if (search) {
         where.indicatorValue = { contains: search, mode: 'insensitive' };
@@ -105,6 +105,10 @@ router.get(
       }
 
       const total = await prisma.threatIndicator.count({ where });
+
+      // Sentinel: MEDIUM - Prevent arbitrary column sorting/SQLi risk
+      // sortBy is strictly validated by the shared threatIndicatorFilterSchema
+      // as an enum of allowed values before being used here dynamically.
       const items = await prisma.threatIndicator.findMany({
         where,
         orderBy: { [sortBy]: sortOrder },
@@ -148,8 +152,8 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 
     res.json({
       totalCount,
-      countBySeverity: severityGroups.reduce((acc: any, curr: any) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
-      countByType: typeGroups.reduce((acc: any, curr: any) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
+      countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
+      countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
       averageConfidence: confidenceAgg._avg.confidenceScore || 0,
     });
   } catch (error) {

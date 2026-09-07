@@ -42,7 +42,6 @@ export interface RawIndicator {
   source?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
-  rawPayload?: Record<string, unknown>;
 }
 
 export interface EnrichmentResult {
@@ -68,6 +67,6 @@ export interface ThreatIndicatorFilter {
   maxConfidence?: number;
   page?: number;
   pageSize?: number;
-  sortBy?: string;
+  sortBy?: 'createdAt' | 'confidenceScore' | 'severity' | 'indicatorValue';
   sortOrder?: 'asc' | 'desc';
 }
