@@ -47,7 +47,7 @@ export class EnrichmentWorker {
         this.logger.info(`Processing batch of ${unenriched.length} indicators`);
         
         await Promise.allSettled(
-          unenriched.map(async (indicator) => {
+          unenriched.map(async (indicator: any) => {
             try {
               const enrichment = await this.enrichmentService.enrich({
                 value: indicator.indicatorValue,
