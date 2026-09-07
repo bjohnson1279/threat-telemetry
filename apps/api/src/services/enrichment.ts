@@ -64,7 +64,6 @@ export class ThreatEnrichmentService {
     }
 
     // Fallback on persistent failure
-    // Need to import ThreatSeverity to fix LOW error, wait we can just cast it or use the enum.
     return {
       severity: 'LOW' as any,
       confidenceScore: 10,
