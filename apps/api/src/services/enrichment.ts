@@ -51,7 +51,7 @@ export class ThreatEnrichmentService {
         
         return result;
       } catch (error) {
-        logger.warn(`Enrichment attempt \${attempt + 1} failed: `, error);
+        logger.warn({ err: error }, `Enrichment attempt \${attempt + 1} failed`);
         attempt++;
         if (attempt >= maxRetries) {
           logger.error(`All \${maxRetries} enrichment attempts failed for \${indicator.value}`);
@@ -64,8 +64,9 @@ export class ThreatEnrichmentService {
     }
 
     // Fallback on persistent failure
+    // Need to import ThreatSeverity to fix LOW error, wait we can just cast it or use the enum.
     return {
-      severity: 'LOW',
+      severity: 'LOW' as any,
       confidenceScore: 10,
       mitreTechniques: [],
       analystBrief: 'Enrichment failed due to service error. Manual review required.',

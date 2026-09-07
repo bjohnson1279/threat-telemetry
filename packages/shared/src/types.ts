@@ -42,6 +42,7 @@ export interface RawIndicator {
   source?: string;
   tags?: string[];
   metadata?: Record<string, unknown>;
+  rawPayload?: Record<string, unknown>;
 }
 
 export interface EnrichmentResult {

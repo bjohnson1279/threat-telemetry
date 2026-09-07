@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, type Router as ExpressRouter, Request, Response } from 'express';
 import { 
   ingestPayloadSchema, 
   threatIndicatorFilterSchema,
@@ -12,7 +12,7 @@ import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
 
-const router = Router();
+const router: ExpressRouter = Router();
 
 // Endpoint: POST /api/v1/ingest
 router.post(
@@ -36,7 +36,7 @@ router.post(
         return;
       }
 
-      const formattedIndicators = rawIndicators.map((ind) => ({
+      const formattedIndicators = rawIndicators.map((ind: any) => ({
         indicatorValue: normalizeIndicatorValue(ind.value, ind.type),
         indicatorType: ind.type,
         severity: 'LOW',
@@ -56,7 +56,7 @@ router.post(
           chunk.map((data) => prisma.threatIndicator.create({ data }))
         );
         ingestedCount += created.length;
-        allIds.push(...created.map((c) => c.id));
+        allIds.push(...created.map((c: any) => c.id));
       }
 
       res.status(201).json({
@@ -87,7 +87,7 @@ router.get(
         sortOrder = 'desc',
       } = req.query as any;
 
-      const where: Prisma.ThreatIndicatorWhereInput = {};
+      const where: any = {};
 
       if (search) {
         where.indicatorValue = { contains: search, mode: 'insensitive' };
@@ -104,13 +104,16 @@ router.get(
         if (maxConfidence !== undefined) where.confidenceScore.lte = maxConfidence;
       }
 
-      const total = await prisma.threatIndicator.count({ where });
-      const items = await prisma.threatIndicator.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
+      // ⚡ Bolt: Parallelize database queries to reduce API latency
+      const [total, items] = await Promise.all([
+        prisma.threatIndicator.count({ where }),
+        prisma.threatIndicator.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        })
+      ]);
 
       res.json({
         data: items,
@@ -130,26 +133,26 @@ router.get(
 // Endpoint: GET /api/v1/indicators/stats/summary
 router.get('/stats/summary', async (req: Request, res: Response, next) => {
   try {
-    const totalCount = await prisma.threatIndicator.count();
-    
-    const severityGroups = await prisma.threatIndicator.groupBy({
-      by: ['severity'],
-      _count: { severity: true },
-    });
-    
-    const typeGroups = await prisma.threatIndicator.groupBy({
-      by: ['indicatorType'],
-      _count: { indicatorType: true },
-    });
-
-    const confidenceAgg = await prisma.threatIndicator.aggregate({
-      _avg: { confidenceScore: true },
-    });
+    // ⚡ Bolt: Parallelize database queries to reduce API latency
+    const [totalCount, severityGroups, typeGroups, confidenceAgg] = await Promise.all([
+      prisma.threatIndicator.count(),
+      prisma.threatIndicator.groupBy({
+        by: ['severity'],
+        _count: { severity: true },
+      }),
+      prisma.threatIndicator.groupBy({
+        by: ['indicatorType'],
+        _count: { indicatorType: true },
+      }),
+      prisma.threatIndicator.aggregate({
+        _avg: { confidenceScore: true },
+      })
+    ]);
 
     res.json({
       totalCount,
-      countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
-      countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
+      countBySeverity: severityGroups.reduce((acc: any, curr: any) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
+      countByType: typeGroups.reduce((acc: any, curr: any) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
       averageConfidence: confidenceAgg._avg.confidenceScore || 0,
     });
   } catch (error) {
@@ -162,7 +165,7 @@ router.get('/:id', async (req: Request, res: Response, next) => {
   try {
     const { id } = req.params;
     const indicator = await prisma.threatIndicator.findUnique({
-      where: { id },
+      where: { id: id as string },
     });
 
     if (!indicator) {
@@ -181,7 +184,7 @@ router.post('/:id/enrich', async (req: Request, res: Response, next) => {
   try {
     const { id } = req.params;
     const indicator = await prisma.threatIndicator.findUnique({
-      where: { id },
+      where: { id: id as string },
     });
 
     if (!indicator) {
@@ -209,7 +212,7 @@ router.post('/:id/enrich', async (req: Request, res: Response, next) => {
     });
 
     const updated = await prisma.threatIndicator.update({
-      where: { id },
+      where: { id: id as string },
       data: {
         severity: result.severity,
         confidenceScore: result.confidenceScore,

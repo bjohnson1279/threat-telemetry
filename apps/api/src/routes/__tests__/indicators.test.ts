@@ -43,7 +43,7 @@ describe('Indicators Routes', () => {
       (layer: any) => layer.route && layer.route.path === path && layer.route.methods[method.toLowerCase()]
     );
     
-    if (!routeInfo) {
+    if (!routeInfo || !routeInfo.route) {
       throw new Error(`Route ${method} ${path} not found`);
     }
 
