@@ -104,13 +104,16 @@ router.get(
         if (maxConfidence !== undefined) where.confidenceScore.lte = maxConfidence;
       }
 
-      const total = await prisma.threatIndicator.count({ where });
-      const items = await prisma.threatIndicator.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
+      // ⚡ Bolt: Parallelize database queries to reduce API latency
+      const [total, items] = await Promise.all([
+        prisma.threatIndicator.count({ where }),
+        prisma.threatIndicator.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        })
+      ]);
 
       res.json({
         data: items,
@@ -130,21 +133,21 @@ router.get(
 // Endpoint: GET /api/v1/indicators/stats/summary
 router.get('/stats/summary', async (req: Request, res: Response, next) => {
   try {
-    const totalCount = await prisma.threatIndicator.count();
-    
-    const severityGroups = await prisma.threatIndicator.groupBy({
-      by: ['severity'],
-      _count: { severity: true },
-    });
-    
-    const typeGroups = await prisma.threatIndicator.groupBy({
-      by: ['indicatorType'],
-      _count: { indicatorType: true },
-    });
-
-    const confidenceAgg = await prisma.threatIndicator.aggregate({
-      _avg: { confidenceScore: true },
-    });
+    // ⚡ Bolt: Parallelize database queries to reduce API latency
+    const [totalCount, severityGroups, typeGroups, confidenceAgg] = await Promise.all([
+      prisma.threatIndicator.count(),
+      prisma.threatIndicator.groupBy({
+        by: ['severity'],
+        _count: { severity: true },
+      }),
+      prisma.threatIndicator.groupBy({
+        by: ['indicatorType'],
+        _count: { indicatorType: true },
+      }),
+      prisma.threatIndicator.aggregate({
+        _avg: { confidenceScore: true },
+      })
+    ]);
 
     res.json({
       totalCount,
