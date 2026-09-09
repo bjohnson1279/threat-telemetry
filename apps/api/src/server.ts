@@ -19,6 +19,7 @@ app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
+app.use(express.text({ type: 'text/csv', limit: '10mb' }));
 
 // Rate limiting
 const limiter = rateLimit({
