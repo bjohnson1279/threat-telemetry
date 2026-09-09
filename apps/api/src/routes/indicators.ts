@@ -4,7 +4,8 @@ import {
   threatIndicatorFilterSchema,
   normalizeIndicatorValue,
   chunkArray,
-  parseCSVPayload
+  parseCSVPayload,
+  RawIndicator
 } from '@threat-telemetry/shared';
 import { prisma } from '../lib/prisma.js';
 import { validate } from '../middleware/validate.js';
@@ -12,14 +13,14 @@ import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
 
-const router = Router();
+const router: Router = Router();
 
 // Endpoint: POST /api/v1/ingest
 router.post(
   '/', // When mounted at /ingest or /indicators/ingest
   async (req: Request, res: Response, next) => {
     try {
-      let rawIndicators = [];
+      let rawIndicators: RawIndicator[] = [];
       const contentType = req.headers['content-type'] || '';
 
       if (contentType.includes('text/csv')) {
@@ -36,12 +37,12 @@ router.post(
         return;
       }
 
-      const formattedIndicators = rawIndicators.map((ind) => ({
+      const formattedIndicators = rawIndicators.map((ind: RawIndicator) => ({
         indicatorValue: normalizeIndicatorValue(ind.value, ind.type),
         indicatorType: ind.type,
         severity: 'LOW',
         confidenceScore: 0,
-        rawPayload: ind.rawPayload || {},
+        rawPayload: ind.metadata || {},
         mitreTechniques: [],
       }));
 
@@ -53,7 +54,7 @@ router.post(
         // Using Prisma create to get IDs, or createMany and query back.
         // For simplicity and getting IDs, we can use a transaction with create.
         const created = await prisma.$transaction(
-          chunk.map((data) => prisma.threatIndicator.create({ data }))
+          chunk.map((data) => prisma.threatIndicator.create({ data: data as Prisma.ThreatIndicatorCreateInput }))
         );
         ingestedCount += created.length;
         allIds.push(...created.map((c) => c.id));
@@ -152,8 +153,8 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 
     res.json({
       totalCount,
-      countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
-      countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
+      countBySeverity: severityGroups.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
+      countByType: typeGroups.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
       averageConfidence: confidenceAgg._avg.confidenceScore || 0,
     });
   } catch (error) {
@@ -164,7 +165,7 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 // Endpoint: GET /api/v1/indicators/:id
 router.get('/:id', async (req: Request, res: Response, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
       where: { id },
     });
@@ -183,7 +184,7 @@ router.get('/:id', async (req: Request, res: Response, next) => {
 // Endpoint: POST /api/v1/indicators/:id/enrich
 router.post('/:id/enrich', async (req: Request, res: Response, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
       where: { id },
     });
