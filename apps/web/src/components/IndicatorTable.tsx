@@ -61,7 +61,15 @@ export const IndicatorTable: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="p-12 text-center text-threat-muted">
                     <div className="text-4xl mb-4 opacity-50">🔍</div>
-                    <p>No indicators found matching the current filters.</p>
+                    <p className="mb-4">No indicators found matching the current filters.</p>
+                    {(filters.search || filters.indicatorType || filters.severity || (filters.minConfidence && filters.minConfidence > 0)) && (
+                      <button
+                        onClick={() => setFilters({ page: 1, pageSize: filters.pageSize })}
+                        className="px-4 py-2 bg-threat-surface border border-threat-border hover:bg-threat-border hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors text-sm"
+                      >
+                        Clear Filters
+                      </button>
+                    )}
                   </td>
                 </tr>
               ) : (
