@@ -4,8 +4,7 @@ import {
   threatIndicatorFilterSchema,
   normalizeIndicatorValue,
   chunkArray,
-  parseCSVPayload,
-  RawIndicator
+  parseCSVPayload
 } from '@threat-telemetry/shared';
 import { prisma } from '../lib/prisma.js';
 import { validate } from '../middleware/validate.js';
@@ -20,7 +19,7 @@ router.post(
   '/', // When mounted at /ingest or /indicators/ingest
   async (req: Request, res: Response, next) => {
     try {
-      let rawIndicators: RawIndicator[] = [];
+      let rawIndicators = [];
       const contentType = req.headers['content-type'] || '';
 
       if (contentType.includes('text/csv')) {
@@ -37,7 +36,7 @@ router.post(
         return;
       }
 
-      const formattedIndicators = rawIndicators.map((ind: RawIndicator) => ({
+      const formattedIndicators = rawIndicators.map((ind: any) => ({
         indicatorValue: normalizeIndicatorValue(ind.value, ind.type),
         indicatorType: ind.type,
         severity: 'LOW',
@@ -54,7 +53,7 @@ router.post(
         // Using Prisma create to get IDs, or createMany and query back.
         // For simplicity and getting IDs, we can use a transaction with create.
         const created = await prisma.$transaction(
-          chunk.map((data) => prisma.threatIndicator.create({ data: data as Prisma.ThreatIndicatorCreateInput }))
+          chunk.map((data) => prisma.threatIndicator.create({ data }))
         );
         ingestedCount += created.length;
         allIds.push(...created.map((c) => c.id));
@@ -153,8 +152,8 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 
     res.json({
       totalCount,
-      countBySeverity: severityGroups.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
-      countByType: typeGroups.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
+      countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
+      countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
       averageConfidence: confidenceAgg._avg.confidenceScore || 0,
     });
   } catch (error) {
