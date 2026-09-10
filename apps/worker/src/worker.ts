@@ -89,14 +89,15 @@ export class EnrichmentWorker {
       const newIndicators = await this.feedConsumer.fetchNewIndicators();
       this.logger.info(`Fetched ${newIndicators.length} mock indicators`);
 
-      for (const ind of newIndicators) {
-        await this.prisma.threatIndicator.create({
-          data: {
+      if (newIndicators.length > 0) {
+        // Bolt: Batch insert mock indicators to reduce sequential database roundtrips
+        await this.prisma.threatIndicator.createMany({
+          data: newIndicators.map(ind => ({
             indicatorValue: ind.value,
             indicatorType: ind.type,
             rawPayload: ind.rawPayload || {},
             lastSeen: new Date(),
-          },
+          })),
         });
       }
     } catch (err) {
