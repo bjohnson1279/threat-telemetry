@@ -150,7 +150,7 @@ describe('Indicators Routes', () => {
   });
 
   it('should test detail endpoint 404', async () => {
-    const req = { params: { id: 'non-existent' }, headers: {} };
+    const req = { params: { id: '00000000-0000-0000-0000-000000000000' }, headers: {} };
     const res = mockResponse();
 
     (prisma.threatIndicator.findUnique as any).mockResolvedValue(null);
@@ -161,37 +161,47 @@ describe('Indicators Routes', () => {
     expect(res.json).toHaveBeenCalledWith({ error: 'Indicator not found' });
   });
 
+  it('should return validation error for invalid uuid on detail endpoint', async () => {
+    const req = { params: { id: 'non-existent' }, headers: {} };
+    const res = mockResponse();
+
+    await executeRoute('get', '/:id', req, res, mockNext);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Validation Error' }));
+  });
+
   it('should test enrichment endpoint trigger', async () => {
     // Set dummy API keys for test
     process.env.LLM_PROVIDER = 'openai';
     process.env.OPENAI_API_KEY = 'test';
 
-    const req = { params: { id: '123' }, headers: {} };
+    const req = { params: { id: '12345678-1234-1234-1234-123456789012' }, headers: {} };
     const res = mockResponse();
 
     (prisma.threatIndicator.findUnique as any).mockResolvedValue({
-      id: '123',
+      id: '12345678-1234-1234-1234-123456789012',
       indicatorValue: 'bad.com',
       indicatorType: 'DOMAIN',
       rawPayload: {}
     });
 
     (prisma.threatIndicator.update as any).mockResolvedValue({
-      id: '123',
+      id: '12345678-1234-1234-1234-123456789012',
       severity: 'HIGH'
     });
 
     await executeRoute('post', '/:id/enrich', req, res, mockNext);
 
     expect(prisma.threatIndicator.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: '123' },
+      where: { id: '12345678-1234-1234-1234-123456789012' },
       data: expect.objectContaining({
         severity: 'HIGH'
       })
     }));
 
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      id: '123',
+      id: '12345678-1234-1234-1234-123456789012',
       severity: 'HIGH'
     }));
   });
