@@ -109,17 +109,21 @@ router.get(
         if (maxConfidence !== undefined) where.confidenceScore.lte = maxConfidence;
       }
 
-      const total = await prisma.threatIndicator.count({ where });
-
-      // Sentinel: MEDIUM - Prevent arbitrary column sorting/SQLi risk
-      // sortBy is strictly validated by the shared threatIndicatorFilterSchema
-      // as an enum of allowed values before being used here dynamically.
-      const items = await prisma.threatIndicator.findMany({
-        where,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
+      // ⚡ Bolt: [performance improvement]
+      // Parallelize independent database queries to reduce network latency
+      // Expected impact: Removes N+1 sequential delay overhead
+      const [total, items] = await Promise.all([
+        prisma.threatIndicator.count({ where }),
+        // Sentinel: MEDIUM - Prevent arbitrary column sorting/SQLi risk
+        // sortBy is strictly validated by the shared threatIndicatorFilterSchema
+        // as an enum of allowed values before being used here dynamically.
+        prisma.threatIndicator.findMany({
+          where,
+          orderBy: { [sortBy]: sortOrder },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        })
+      ]);
 
       res.json({
         data: items,
@@ -139,21 +143,23 @@ router.get(
 // Endpoint: GET /api/v1/indicators/stats/summary
 router.get('/stats/summary', async (req: Request, res: Response, next) => {
   try {
-    const totalCount = await prisma.threatIndicator.count();
-    
-    const severityGroups = await prisma.threatIndicator.groupBy({
-      by: ['severity'],
-      _count: { severity: true },
-    });
-    
-    const typeGroups = await prisma.threatIndicator.groupBy({
-      by: ['indicatorType'],
-      _count: { indicatorType: true },
-    });
-
-    const confidenceAgg = await prisma.threatIndicator.aggregate({
-      _avg: { confidenceScore: true },
-    });
+    // ⚡ Bolt: [performance improvement]
+    // Parallelize independent database queries to reduce network latency
+    // Expected impact: Significant reduction in response time for stats endpoint
+    const [totalCount, severityGroups, typeGroups, confidenceAgg] = await Promise.all([
+      prisma.threatIndicator.count(),
+      prisma.threatIndicator.groupBy({
+        by: ['severity'],
+        _count: { severity: true },
+      }),
+      prisma.threatIndicator.groupBy({
+        by: ['indicatorType'],
+        _count: { indicatorType: true },
+      }),
+      prisma.threatIndicator.aggregate({
+        _avg: { confidenceScore: true },
+      })
+    ]);
 
     res.json({
       totalCount,
