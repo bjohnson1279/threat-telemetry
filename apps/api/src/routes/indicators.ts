@@ -11,6 +11,11 @@ import { validate } from '../middleware/validate.js';
 import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
+import { z } from 'zod';
+
+const idParamSchema = z.object({
+  id: z.string().uuid(),
+});
 
 const router: Router = Router();
 
@@ -162,7 +167,7 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 });
 
 // Endpoint: GET /api/v1/indicators/:id
-router.get('/:id', async (req: Request, res: Response, next) => {
+router.get('/:id', validate(idParamSchema, 'params'), async (req: Request, res: Response, next) => {
   try {
     const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
@@ -181,7 +186,7 @@ router.get('/:id', async (req: Request, res: Response, next) => {
 });
 
 // Endpoint: POST /api/v1/indicators/:id/enrich
-router.post('/:id/enrich', async (req: Request, res: Response, next) => {
+router.post('/:id/enrich', validate(idParamSchema, 'params'), async (req: Request, res: Response, next) => {
   try {
     const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
