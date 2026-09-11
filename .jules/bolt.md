@@ -1,4 +1,1 @@
-## 2025-05-18 - Parallelizing Prisma DB Queries
-
-**Learning:** When dealing with multiple independent reads in Prisma (like counting rows for pagination and fetching the page data, or running several groupBys/aggregations), Prisma queries can run concurrently via `Promise.all`. This codebase executes them sequentially by default.
-**Action:** Always look for opportunities to replace sequential `await prisma...` queries with `Promise.all` arrays for independent data fetches to avoid sequential roundtrips.
+## 2026-09-06 - Prisma Sequential Query Optimization\n**Learning:** Running sequential independent database queries with Prisma causes unnecessary N+1 roundtrip delays over the network.\n**Action:** Use `Promise.all()` to parallelize independent database queries, especially in statistical summary or list endpoints with counts.
