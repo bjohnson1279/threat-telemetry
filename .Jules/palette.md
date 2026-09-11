@@ -9,3 +9,6 @@
 ## 2026-09-09 - Empty State UX Pattern
 **Learning:** Discovered a frustrating "dead end" UX pattern in the indicator table where users could get stuck in an empty state after aggressive filtering without an obvious way to reset.
 **Action:** Implemented an automatic "Clear Filters" contextual action that only renders in the empty state *if* filters are actively applied. This prevents users from manually resetting multiple select/input fields to escape the empty state.
+## 2026-09-10 - Accessible Dialogs & Async Feedback
+**Learning:** Implementing custom modals requires explicit WAI-ARIA roles (`role="dialog"`, `aria-modal="true"`, `aria-labelledby`) and hiding backdrop overlays from screen readers (`aria-hidden="true"`) to ensure they are interpreted correctly by assistive tech. Additionally, async actions within modals require visual feedback (like a spinner) as disabling the button isn't enough context for users.
+**Action:** Always verify custom modal components have full ARIA attributes linking titles to the dialog root and implement explicit visual feedback for async submit buttons.
