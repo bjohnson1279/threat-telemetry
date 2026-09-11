@@ -18,14 +18,16 @@ vi.mock('../../lib/prisma.js', () => ({
 
 vi.mock('../../services/enrichment.js', () => {
   return {
-    ThreatEnrichmentService: class {
-      enrich = vi.fn().mockResolvedValue({
-        severity: 'HIGH',
-        confidenceScore: 90,
-        mitreTechniques: ['T1566'],
-        analystBrief: 'Mocked enrichment result.',
-      });
-    },
+    ThreatEnrichmentService: vi.fn().mockImplementation(() => {
+      return {
+        enrich: vi.fn().mockResolvedValue({
+          severity: 'HIGH',
+          confidenceScore: 90,
+          mitreTechniques: ['T1566'],
+          analystBrief: 'Mocked enrichment result.',
+        }),
+      };
+    }),
   };
 });
 
@@ -40,13 +42,13 @@ describe('Indicators Routes', () => {
     const routeInfo = indicatorsRouter.stack.find(
       (layer: any) => layer.route && layer.route.path === path && layer.route.methods[method.toLowerCase()]
     );
-    
+
     if (!routeInfo || !routeInfo.route) {
       throw new Error(`Route ${method} ${path} not found`);
     }
 
     const handlers = routeInfo.route.stack.map((s: any) => s.handle);
-    
+
     let i = 0;
     const runNext = async (err?: any): Promise<void> => {
       if (err) {
@@ -58,7 +60,7 @@ describe('Indicators Routes', () => {
         await handler(req, res, runNext);
       }
     };
-    
+
     await runNext();
   };
 
@@ -140,7 +142,7 @@ describe('Indicators Routes', () => {
         severity: 'HIGH'
       })
     }));
-    
+
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.any(Array),
       meta: expect.objectContaining({ total: 10 }),
