@@ -18,16 +18,14 @@ vi.mock('../../lib/prisma.js', () => ({
 
 vi.mock('../../services/enrichment.js', () => {
   return {
-    ThreatEnrichmentService: vi.fn().mockImplementation(() => {
-      return {
-        enrich: vi.fn().mockResolvedValue({
-          severity: 'HIGH',
-          confidenceScore: 90,
-          mitreTechniques: ['T1566'],
-          analystBrief: 'Mocked enrichment result.',
-        }),
-      };
-    }),
+    ThreatEnrichmentService: class {
+      enrich = vi.fn().mockResolvedValue({
+        severity: 'HIGH',
+        confidenceScore: 90,
+        mitreTechniques: ['T1566'],
+        analystBrief: 'Mocked enrichment result.',
+      });
+    }
   };
 });
 
