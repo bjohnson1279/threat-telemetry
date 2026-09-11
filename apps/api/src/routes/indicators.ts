@@ -12,7 +12,7 @@ import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
 
-const router = Router();
+const router: Router = Router();
 
 // Endpoint: POST /api/v1/ingest
 router.post(
@@ -41,7 +41,7 @@ router.post(
         indicatorType: ind.type,
         severity: 'LOW',
         confidenceScore: 0,
-        rawPayload: ind.rawPayload || {},
+        rawPayload: (ind as any).rawPayload || {},
         mitreTechniques: [],
       }));
 
@@ -104,16 +104,17 @@ router.get(
         if (maxConfidence !== undefined) where.confidenceScore.lte = maxConfidence;
       }
 
-      // ⚡ Bolt: Parallelize queries to save a database roundtrip
-      const [total, items] = await Promise.all([
-        prisma.threatIndicator.count({ where }),
-        prisma.threatIndicator.findMany({
-          where,
-          orderBy: { [sortBy]: sortOrder },
-          skip: (page - 1) * pageSize,
-          take: pageSize,
-        })
-      ]);
+      const total = await prisma.threatIndicator.count({ where });
+
+      // Sentinel: MEDIUM - Prevent arbitrary column sorting/SQLi risk
+      // sortBy is strictly validated by the shared threatIndicatorFilterSchema
+      // as an enum of allowed values before being used here dynamically.
+      const items = await prisma.threatIndicator.findMany({
+        where,
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      });
 
       res.json({
         data: items,
@@ -133,21 +134,21 @@ router.get(
 // Endpoint: GET /api/v1/indicators/stats/summary
 router.get('/stats/summary', async (req: Request, res: Response, next) => {
   try {
-    // ⚡ Bolt: Run 4 sequential queries in parallel to save 3 roundtrips
-    const [totalCount, severityGroups, typeGroups, confidenceAgg] = await Promise.all([
-      prisma.threatIndicator.count(),
-      prisma.threatIndicator.groupBy({
-        by: ['severity'],
-        _count: { severity: true },
-      }),
-      prisma.threatIndicator.groupBy({
-        by: ['indicatorType'],
-        _count: { indicatorType: true },
-      }),
-      prisma.threatIndicator.aggregate({
-        _avg: { confidenceScore: true },
-      })
-    ]);
+    const totalCount = await prisma.threatIndicator.count();
+    
+    const severityGroups = await prisma.threatIndicator.groupBy({
+      by: ['severity'],
+      _count: { severity: true },
+    });
+    
+    const typeGroups = await prisma.threatIndicator.groupBy({
+      by: ['indicatorType'],
+      _count: { indicatorType: true },
+    });
+
+    const confidenceAgg = await prisma.threatIndicator.aggregate({
+      _avg: { confidenceScore: true },
+    });
 
     res.json({
       totalCount,
@@ -163,7 +164,7 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 // Endpoint: GET /api/v1/indicators/:id
 router.get('/:id', async (req: Request, res: Response, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
       where: { id },
     });
@@ -182,7 +183,7 @@ router.get('/:id', async (req: Request, res: Response, next) => {
 // Endpoint: POST /api/v1/indicators/:id/enrich
 router.post('/:id/enrich', async (req: Request, res: Response, next) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
       where: { id },
     });
