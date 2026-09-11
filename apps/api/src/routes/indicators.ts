@@ -11,8 +11,13 @@ import { validate } from '../middleware/validate.js';
 import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
+import { z } from 'zod';
 
 const router: Router = Router();
+
+const idParamSchema = z.object({
+  id: z.string().uuid(),
+});
 
 // Endpoint: POST /api/v1/ingest
 router.post(
@@ -164,9 +169,12 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 });
 
 // Endpoint: GET /api/v1/indicators/:id
-router.get('/:id', async (req: Request<{ id: string }>, res: Response, next) => {
-  try {
-    const id = req.params.id;
+router.get(
+  '/:id',
+  validate(idParamSchema, 'params'),
+  async (req: Request<{ id: string }>, res: Response, next) => {
+    try {
+      const id = req.params.id;
     const indicator = await prisma.threatIndicator.findUnique({
       where: { id },
     });
@@ -183,9 +191,12 @@ router.get('/:id', async (req: Request<{ id: string }>, res: Response, next) => 
 });
 
 // Endpoint: POST /api/v1/indicators/:id/enrich
-router.post('/:id/enrich', async (req: Request<{ id: string }>, res: Response, next) => {
-  try {
-    const id = req.params.id;
+router.post(
+  '/:id/enrich',
+  validate(idParamSchema, 'params'),
+  async (req: Request<{ id: string }>, res: Response, next) => {
+    try {
+      const id = req.params.id;
     const indicator = await prisma.threatIndicator.findUnique({
       where: { id },
     });
