@@ -5,7 +5,17 @@ export const StatsCards: React.FC = () => {
   const { stats, loading } = useStats();
 
   if (loading && !stats) {
-    return <div className="animate-pulse flex space-x-4 h-24 bg-threat-surface rounded-lg"></div>;
+    return (
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6"
+        aria-busy="true"
+        aria-label="Loading statistics"
+      >
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="animate-pulse h-24 bg-threat-surface border border-threat-border rounded-lg shadow-lg"></div>
+        ))}
+      </div>
+    );
   }
 
   return (
