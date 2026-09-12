@@ -15,10 +15,20 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
           type="text"
           aria-label="Search indicators"
           placeholder="Search indicators..."
-          className="w-full bg-threat-bg border border-threat-border rounded px-4 py-2 pl-9 text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
+          className="w-full bg-threat-bg border border-threat-border rounded px-4 py-2 pl-9 pr-8 text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
           value={filters.search || ''}
           onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
         />
+        {filters.search && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => setFilters(prev => ({ ...prev, search: undefined, page: 1 }))}
+            className="absolute right-2 top-2.5 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded-full leading-none flex items-center justify-center w-5 h-5 text-lg"
+          >
+            &times;
+          </button>
+        )}
       </div>
       
       <select

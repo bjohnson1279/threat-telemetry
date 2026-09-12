@@ -9,3 +9,7 @@
 ## 2026-09-09 - Pagination Accessibility Improvement
 **Learning:** Pagination controls often lack proper form labels for row size selection and ARIA live regions for page number changes, breaking screen reader navigation. Missing focus visible rings on pagination buttons make keyboard navigation difficult.
 **Action:** Always use <label> tags linked by id/htmlFor to <select> elements, ensure interactive buttons have focus-visible styling, and wrap page indicators in aria-live="polite".
+
+## 2026-09-11 - Add clear button to search input
+**Learning:** Search inputs often contain complex queries, but users had to manually backspace or select all text to clear them, causing friction. A small interactive clear button makes filtering noticeably faster.
+**Action:** Consistently add a clear button `(&times;)` with a proper `aria-label="Clear search"` to all non-trivial search inputs in the design system, ensuring it's conditionally rendered only when the input has a value.
