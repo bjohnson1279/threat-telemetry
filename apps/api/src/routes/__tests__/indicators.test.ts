@@ -25,7 +25,7 @@ vi.mock('../../services/enrichment.js', () => {
         mitreTechniques: ['T1566'],
         analystBrief: 'Mocked enrichment result.',
       });
-    },
+    }
   };
 });
 
@@ -190,10 +190,6 @@ describe('Indicators Routes', () => {
     });
 
     await executeRoute('post', '/:id/enrich', req, res, mockNext);
-
-    if (mockNext.mock.calls.length > 0) {
-      console.log('mockNext called with:', mockNext.mock.calls[0][0]);
-    }
 
     expect(prisma.threatIndicator.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: '12345678-1234-1234-1234-123456789012' },
