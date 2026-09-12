@@ -8,7 +8,14 @@ export const ConfidenceBar: React.FC<{ confidence: number }> = ({ confidence }) 
 
   return (
     <div className="flex items-center space-x-2">
-      <div className="flex-1 h-2 bg-threat-border rounded-full overflow-hidden">
+      <div
+        className="flex-1 h-2 bg-threat-border rounded-full overflow-hidden"
+        role="progressbar"
+        aria-valuenow={confidence}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Confidence score"
+      >
         <div className={`h-full ${colorClass}`} style={{ width: `${confidence}%` }} />
       </div>
       <span className="text-xs font-mono w-8 text-right">{confidence}%</span>
