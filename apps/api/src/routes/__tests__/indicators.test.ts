@@ -11,6 +11,7 @@ vi.mock('../../lib/prisma.js', () => ({
       groupBy: vi.fn(),
       aggregate: vi.fn(),
       update: vi.fn(),
+      createManyAndReturn: vi.fn(),
     },
     $transaction: vi.fn((operations) => Promise.all(operations.map((op: any) => ({ id: 'mocked-id' })))),
   },
@@ -86,9 +87,11 @@ describe('Indicators Routes', () => {
     };
     const res = mockResponse();
 
+    (prisma.threatIndicator.createManyAndReturn as any).mockResolvedValue([{ id: 'mocked-id' }]);
+
     await executeRoute('post', '/', req, res, mockNext);
 
-    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(prisma.threatIndicator.createManyAndReturn).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       ingested: 1,

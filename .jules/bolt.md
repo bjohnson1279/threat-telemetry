@@ -16,3 +16,6 @@
 ## Hallucinatory Task & Empty PR Directives
 - **Zero-Diff Task Termination**: If the requested optimization, refactor, or fix is ALREADY natively present in the target branch, DO NOT create an empty pull request or commit an acknowledgment PR. Exit the task cleanly without opening a PR.
 - **Stale Suggestion Guard**: Always verify the current code on `main`/`master` before planning changes. If no actionable diff is required, cancel task execution immediately.
+## 2026-09-13 - Prisma Bulk Insert Optimization
+**Learning:** Sequential calls to `prisma.[model].create` within a `Promise.all` or loop introduce N+1 query overhead.
+**Action:** Always replace sequential inserts with `prisma.[model].createMany` or `prisma.[model].createManyAndReturn` (supported by Prisma 6.1.0+) to optimize bulk ingestion routes. Ensure you properly mock `createManyAndReturn` in corresponding tests.
