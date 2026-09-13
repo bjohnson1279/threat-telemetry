@@ -25,13 +25,15 @@ export const enrichmentResultSchema = z.object({
 });
 
 export const threatIndicatorFilterSchema = z.object({
-  search: z.string().optional(),
+  // Sentinel: HIGH/MEDIUM - Add input length limits to prevent DoS via unbounded DB queries and excessive memory allocation
+  search: z.string().max(100).optional(),
   indicatorType: indicatorTypeSchema.optional(),
   severity: threatSeveritySchema.optional(),
   minConfidence: z.coerce.number().min(0).max(100).optional(),
   maxConfidence: z.coerce.number().min(0).max(100).optional(),
   page: z.coerce.number().min(1).optional(),
-  pageSize: z.coerce.number().min(1).optional(),
+  // Sentinel: HIGH/MEDIUM - Bound pageSize to prevent large memory allocations and DB strain
+  pageSize: z.coerce.number().min(1).max(100).optional(),
   sortBy: z.enum(['createdAt', 'confidenceScore', 'severity', 'indicatorValue']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
