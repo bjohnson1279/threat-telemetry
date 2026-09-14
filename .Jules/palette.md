@@ -13,3 +13,6 @@
 ## 2026-09-11 - Add clear button to search input
 **Learning:** Search inputs often contain complex queries, but users had to manually backspace or select all text to clear them, causing friction. A small interactive clear button makes filtering noticeably faster.
 **Action:** Consistently add a clear button `(&times;)` with a proper `aria-label="Clear search"` to all non-trivial search inputs in the design system, ensuring it's conditionally rendered only when the input has a value.
+## 2026-09-14 - Accessible Progress Bars
+**Learning:** When building visual indicators like confidence scores using arbitrary `div` widths and separate text spans, screen readers announce them confusingly as disjointed content. Adding `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, and `aria-valuemax` to a unified wrapper, while hiding the decorative bits with `aria-hidden="true"`, drastically improves the experience without altering the visual design.
+**Action:** Always wrap visual gauges/progress bars in a semantically grouped `role="progressbar"` container and hide the purely visual DOM elements from screen readers.
