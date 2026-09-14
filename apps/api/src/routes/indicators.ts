@@ -55,12 +55,11 @@ router.post(
       let allIds: string[] = [];
 
       for (const chunk of chunks) {
-        // ⚡ Bolt: [performance improvement]
-        // Use createManyAndReturn instead of sequential inserts in a transaction
-        // Expected impact: Eliminates N+1 sequential database insertions, improving bulk ingestion speed
-        const created = await prisma.threatIndicator.createManyAndReturn({
-          data: chunk,
-        });
+        // Using Prisma create to get IDs, or createMany and query back.
+        // For simplicity and getting IDs, we can use a transaction with create.
+        const created = await prisma.$transaction(
+          chunk.map((data) => prisma.threatIndicator.create({ data }))
+        );
         ingestedCount += created.length;
         allIds.push(...created.map((c) => c.id));
       }
