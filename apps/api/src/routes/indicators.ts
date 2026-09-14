@@ -208,7 +208,7 @@ router.post('/:id/enrich', validate(idParamSchema, 'params'), async (req: Reques
     const apiKey = provider === 'anthropic' ? process.env.ANTHROPIC_API_KEY : process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
-      res.status(500).json({ error: 'Enrichment service not configured (API key missing)' });
+      res.status(500).json({ error: 'Enrichment service unavailable' });
       return;
     }
 
