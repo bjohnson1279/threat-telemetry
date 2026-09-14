@@ -15,8 +15,3 @@
 **Vulnerability:** The API endpoint `/api/v1/indicators` was accepting query parameters like `page`, `pageSize`, `minConfidence`, and `maxConfidence` that were mapped directly to Zod numeric validations (`z.number()`). Because Express receives query parameters as strings, this caused validation to fail unless type coercion was explicitly used.
 **Learning:** When using Zod to validate query string parameters in Express, numeric fields must use `z.coerce.number()` because all incoming data is parsed as strings by default. Relying on strict `z.number()` causes requests to immediately fail validation, potentially breaking intended functional filters and creating a denial of service for those valid filter conditions.
 **Prevention:** Always use `z.coerce.*` (like `z.coerce.number()` or `z.coerce.boolean()`) for query parameters or form data when mapping to strict type definitions in Zod schemas.
-
-## 2026-09-14 - Prevent DoS from Unbounded Input
-**Vulnerability:** The API allowed users to provide unbounded strings for the `search` parameter and unbounded numbers for `pageSize`, potentially leading to high database load and memory consumption.
-**Learning:** Unbounded pagination or search strings without proper `.max()` constraints in Zod schemas can allow simple DoS attacks by forcing the database to process huge payloads.
-**Prevention:** Always add strict upper bounds like `.max(100)` to pagination limits, search inputs, and other user-controlled query string parameters.
