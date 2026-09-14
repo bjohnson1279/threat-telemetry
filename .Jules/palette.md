@@ -13,3 +13,4 @@
 ## 2026-09-11 - Add clear button to search input
 **Learning:** Search inputs often contain complex queries, but users had to manually backspace or select all text to clear them, causing friction. A small interactive clear button makes filtering noticeably faster.
 **Action:** Consistently add a clear button `(&times;)` with a proper `aria-label="Clear search"` to all non-trivial search inputs in the design system, ensuring it's conditionally rendered only when the input has a value.
+## 2026-09-12 - [UX/Accessibility Improvements]\n**Learning:** Implementing semantic HTML attributes like `aria-busy="true"` and `role="progressbar"` with `aria-value*` drastically improves screen reader compatibility without needing any custom JavaScript logic or CSS changes.\n**Action:** Use existing ARIA standards for structural semantic improvements directly on layout placeholders/loading-states and visual indicators.
