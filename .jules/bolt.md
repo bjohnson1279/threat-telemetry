@@ -16,3 +16,7 @@
 ## Hallucinatory Task & Empty PR Directives
 - **Zero-Diff Task Termination**: If the requested optimization, refactor, or fix is ALREADY natively present in the target branch, DO NOT create an empty pull request or commit an acknowledgment PR. Exit the task cleanly without opening a PR.
 - **Stale Suggestion Guard**: Always verify the current code on `main`/`master` before planning changes. If no actionable diff is required, cancel task execution immediately.
+
+## 2026-09-07 - Prisma Bulk Insert Optimization
+**Learning:** Sequential `create` queries within a `prisma.$transaction` for bulk inserts create an N+1 query problem, increasing network roundtrips.
+**Action:** When bulk inserting and requiring inserted records/IDs back, use Prisma 6.1.0+'s `createManyAndReturn` rather than a transaction mapping individual `create` operations.
