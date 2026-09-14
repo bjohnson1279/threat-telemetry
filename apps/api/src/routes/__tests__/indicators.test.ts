@@ -5,6 +5,7 @@ vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     threatIndicator: {
       create: vi.fn(),
+      createManyAndReturn: vi.fn().mockResolvedValue([{ id: 'mocked-id' }]),
       findMany: vi.fn(),
       count: vi.fn(),
       findUnique: vi.fn(),
@@ -88,7 +89,7 @@ describe('Indicators Routes', () => {
 
     await executeRoute('post', '/', req, res, mockNext);
 
-    expect(prisma.$transaction).toHaveBeenCalled();
+    expect(prisma.threatIndicator.createManyAndReturn).toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       ingested: 1,

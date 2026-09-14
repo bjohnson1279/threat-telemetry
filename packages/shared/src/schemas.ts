@@ -25,13 +25,13 @@ export const enrichmentResultSchema = z.object({
 });
 
 export const threatIndicatorFilterSchema = z.object({
-  search: z.string().optional(),
+  search: z.string().max(256).optional(),
   indicatorType: indicatorTypeSchema.optional(),
   severity: threatSeveritySchema.optional(),
   minConfidence: z.coerce.number().min(0).max(100).optional(),
   maxConfidence: z.coerce.number().min(0).max(100).optional(),
   page: z.coerce.number().min(1).optional(),
-  pageSize: z.coerce.number().min(1).optional(),
+  pageSize: z.coerce.number().min(1).max(100).optional(),
   sortBy: z.enum(['createdAt', 'confidenceScore', 'severity', 'indicatorValue']).optional(),
   sortOrder: z.enum(['asc', 'desc']).optional(),
 });
