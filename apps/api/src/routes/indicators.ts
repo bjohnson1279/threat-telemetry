@@ -55,11 +55,10 @@ router.post(
       let allIds: string[] = [];
 
       for (const chunk of chunks) {
-        // Using Prisma create to get IDs, or createMany and query back.
-        // For simplicity and getting IDs, we can use a transaction with create.
-        const created = await prisma.$transaction(
-          chunk.map((data) => prisma.threatIndicator.create({ data }))
-        );
+        // ⚡ Bolt: [performance improvement]
+        // Use createManyAndReturn to batch insert rows instead of sequential inserts in a transaction.
+        // Expected impact: Eliminates N+1 database roundtrips per ingested chunk.
+        const created = await prisma.threatIndicator.createManyAndReturn({ data: chunk });
         ingestedCount += created.length;
         allIds.push(...created.map((c) => c.id));
       }
