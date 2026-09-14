@@ -41,6 +41,12 @@ router.post(
         return;
       }
 
+      // Sentinel: HIGH - Enforce array length limit for all payload types (including CSV) to prevent memory DoS and DB strain
+      if (rawIndicators.length > 10000) {
+        res.status(413).json({ error: 'Payload too large: Maximum 10000 indicators allowed' });
+        return;
+      }
+
       const formattedIndicators = rawIndicators.map((ind) => ({
         indicatorValue: normalizeIndicatorValue(ind.value, ind.type),
         indicatorType: ind.type,
