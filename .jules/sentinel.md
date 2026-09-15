@@ -20,3 +20,7 @@
 **Vulnerability:** The `pageSize` and `search` fields in the API filter schema lacked `.max()` bounds, allowing an attacker to request an arbitrary number of records (e.g., `pageSize=1000000`) or supply massive strings, leading to potential out-of-memory crashes and database performance degradation.
 **Learning:** By default, `z.coerce.number()` and `z.string()` in Zod have no upper bound. Missing strict bounds on list requests and search inputs makes APIs susceptible to application-level DoS attacks.
 **Prevention:** Always define explicit `.max()` constraints on pagination and search query parameters in Zod schemas.
+## 2026-09-15 - Sentinel: Enforce Input Limits on Ingestion Payloads
+**Vulnerability:** DoS and memory exhaustion due to unbounded bulk ingestion payloads and large payload sizes in JSON and CSV format
+**Learning:** Even if the express body parser implements a byte size limit, massive logical bulk limits or unconstrained individual string/array field lengths can cause excessive DB load and memory exhaustion when mapping arrays to ORM models.
+**Prevention:** Always enforce both maximum logical bounds on array lengths (`rawIndicators.length > 10000`) and Zod `.max()` on all inner structures like strings and arrays.

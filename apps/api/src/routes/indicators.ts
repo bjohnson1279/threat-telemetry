@@ -41,6 +41,12 @@ router.post(
         return;
       }
 
+      // Sentinel: MEDIUM - Prevent DoS and memory strain by limiting bulk payload size
+      if (rawIndicators.length > 10000) {
+        res.status(413).json({ error: 'Payload too large: maximum 10,000 indicators allowed' });
+        return;
+      }
+
       const formattedIndicators = rawIndicators.map((ind) => ({
         indicatorValue: normalizeIndicatorValue(ind.value, ind.type),
         indicatorType: ind.type,
