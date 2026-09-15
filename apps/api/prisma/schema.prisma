@@ -20,11 +20,13 @@ model ThreatIndicator {
   lastSeen          DateTime @default(now()) @map("last_seen")
   createdAt         DateTime @default(now()) @map("created_at")
 
+  // ⚡ Bolt: [performance improvement]
+  // Add database indexes natively via Prisma schema for frequently filtered and sorted fields
+  // Impact: Eliminates sequential table scans when querying large indicator datasets, matching the raw SQL intentions.
+  @@index([mitreTechniques], type: Gin)
+  @@index([indicatorType, confidenceScore])
+  @@index([severity])
+  @@index([indicatorValue])
+
   @@map("threat_indicators")
 }
-
-// Raw SQL Migrations to apply manually or in initial migration:
-// CREATE INDEX idx_mitre_techniques ON threat_indicators USING GIN (mitre_techniques);
-// CREATE INDEX idx_type_score ON threat_indicators (indicator_type, confidence_score);
-// CREATE INDEX idx_severity ON threat_indicators (severity);
-// CREATE INDEX idx_indicator_value ON threat_indicators (indicator_value);
