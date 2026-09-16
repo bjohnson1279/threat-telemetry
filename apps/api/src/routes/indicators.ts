@@ -145,9 +145,22 @@ router.get(
   }
 );
 
+// Cache for stats endpoint
+let statsCache: { data: any; timestamp: number } | null = null;
+const STATS_CACHE_TTL_MS = 10000;
+
 // Endpoint: GET /api/v1/indicators/stats/summary
 router.get('/stats/summary', async (req: Request, res: Response, next) => {
   try {
+    // ⚡ Bolt: [performance improvement]
+    // Cache the results of the expensive database aggregations to prevent database strain.
+    // The frontend polls this endpoint every 15 seconds, causing redundant heavy queries.
+    // Expected impact: Drastically reduces database CPU load and query volume.
+    if (statsCache && Date.now() - statsCache.timestamp < STATS_CACHE_TTL_MS) {
+      res.json(statsCache.data);
+      return;
+    }
+
     // ⚡ Bolt: [performance improvement]
     // Parallelize independent database queries to reduce network latency
     // Expected impact: Significant reduction in response time for stats endpoint
@@ -166,12 +179,16 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
       })
     ]);
 
-    res.json({
+    const data = {
       totalCount,
       countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
       countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
       averageConfidence: confidenceAgg._avg.confidenceScore || 0,
-    });
+    };
+
+    statsCache = { data, timestamp: Date.now() };
+
+    res.json(data);
   } catch (error) {
     next(error);
   }
