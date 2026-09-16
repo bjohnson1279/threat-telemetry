@@ -1,5 +1,9 @@
-1. **Fix CI Build Failure**: The CI pipeline fails during `pnpm build` in `apps/worker` with `Module '"@prisma/client"' has no exported member 'PrismaClient'`. This happens because Prisma relies on generating the client using `prisma generate` before it can be used, and the CI workflow does not currently run this command.
-2. Update `.github/workflows/ci.yml` to insert a step running `pnpm run db:generate` between `Install Dependencies` and `Build Packages`. This satisfies the instruction memory: "When building the project in a fresh environment or CI workflow (.github/workflows/ci.yml), ensure pnpm run db:generate is executed before pnpm build to generate the Prisma client...".
-3. **Complete pre-commit steps**
-   - Run tests, check types, etc.
-4. **Submit change**
+1. *Add database indexes in Prisma schema*
+   - Modify `apps/api/prisma/schema.prisma` to include native `@@index` declarations for frequently queried and filtered fields (`severity`, `indicatorType`, `indicatorValue`, `confidenceScore`). This replaces the need for manual raw SQL migrations mentioned in the comments.
+2. *Verify database schema generation and build*
+   - Run `pnpm db:generate` to regenerate the Prisma client with the new indexes.
+   - Run `pnpm test` to ensure no functionality is broken by this schema addition.
+3. *Complete pre commit steps*
+   - Complete pre commit steps to make sure proper testing, verifications, reviews and reflections are done.
+4. *Submit the change.*
+   - Once verified, I will submit the PR with a descriptive commit message documenting the expected impact.

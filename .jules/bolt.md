@@ -20,3 +20,7 @@
 ## 2026-09-12 - Prisma batch insertion optimization
 **Learning:** Using `prisma.$transaction` with an array of `prisma.create` queries performs sequential inserts leading to an N+1 performance bottleneck during ingestion.
 **Action:** Use `prisma.createManyAndReturn` (or `createMany`) to batch insert multiple rows in a single query, significantly reducing database roundtrips.
+
+## 2026-09-15 - Prisma Database Indexes
+**Learning:** Raw SQL migrations documented in comments or standalone files can be missed by ORM schema generation. Missing database indexes on frequently queried fields like `severity`, `indicatorType`, and `confidenceScore` leads to sequential table scans and N+1 query bottlenecks as the dataset grows.
+**Action:** Use native Prisma schema `@@index` declarations (like `@@index([severity])` and `@@index([mitreTechniques], type: Gin)`) to ensure indexes are consistently managed and applied by the ORM during deployment.
