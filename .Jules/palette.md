@@ -17,3 +17,7 @@
 ## 2026-09-15 - [Confidence Bar Accessibility Fix]
 **Learning:** When building visual progress bars or gauges with standard DOM elements, using a semantically grouped container with `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, and `aria-valuemax` while hiding purely visual inner DOM elements from screen readers using `aria-hidden="true"` provides a much cleaner experience for assistive technologies.
 **Action:** Apply this pattern consistently across all custom progress/gauge components instead of arbitrarily scattering ARIA attributes.
+
+## 2026-09-16 - Keyboard shortcut visual hints
+**Learning:** When adding keyboard shortcuts (like '/' to focus search), users often discover them by accident or not at all unless visually hinted. Adding a non-intrusive `<kbd>` hint directly in the input that disappears on typing provides excellent, non-blocking discoverability.
+**Action:** When implementing global keyboard shortcuts for primary inputs, add a small, styled `<kbd>` element inside the input's visual bounds, hide it when the input has value to not interfere with text, and ensure the `aria-label` includes the shortcut hint.
