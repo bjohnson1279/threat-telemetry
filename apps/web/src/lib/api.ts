@@ -43,9 +43,13 @@ export async function fetchStats(): Promise<StatsResponse> {
 }
 
 export async function ingestIndicators(payload: IngestPayload): Promise<{ ingested: number }> {
+  const apiKey = import.meta.env.VITE_INTERNAL_API_KEY || '';
   const res = await fetch(`${API_BASE}/ingest`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+    },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error('Failed to ingest indicators');
@@ -53,8 +57,12 @@ export async function ingestIndicators(payload: IngestPayload): Promise<{ ingest
 }
 
 export async function triggerEnrichment(id: string): Promise<ThreatIndicator> {
+  const apiKey = import.meta.env.VITE_INTERNAL_API_KEY || '';
   const res = await fetch(`${API_BASE}/indicators/${id}/enrich`, {
     method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+    },
   });
   if (!res.ok) throw new Error('Failed to trigger enrichment');
   return res.json();
