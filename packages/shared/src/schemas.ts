@@ -8,8 +8,8 @@ export const threatSeveritySchema = z.nativeEnum(ThreatSeverity);
 export const rawIndicatorSchema = z.object({
   value: z.string().min(1).max(2048),
   type: indicatorTypeSchema,
-  source: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  source: z.string().max(256).optional(),
+  tags: z.array(z.string().max(256)).max(100).optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -37,10 +37,10 @@ export const threatIndicatorFilterSchema = z.object({
 });
 
 export const csvRowSchema = z.object({
-  value: z.string().min(1),
-  type: z.string(),
-  source: z.string().optional(),
-  tags: z.string().optional(),
+  value: z.string().min(1).max(2048),
+  type: z.string().max(100),
+  source: z.string().max(256).optional(),
+  tags: z.string().max(10000).optional(),
 });
 
 export function parseCSVPayload(csvContent: string): RawIndicator[] {
