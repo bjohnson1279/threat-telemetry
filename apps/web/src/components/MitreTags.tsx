@@ -1,6 +1,8 @@
 import React from 'react';
 
-export const MitreTags: React.FC<{ techniques?: string[] }> = ({ techniques }) => {
+// ⚡ Bolt: [performance improvement]
+// Memoize to prevent unnecessary re-renders in IndicatorTable rows
+export const MitreTags: React.FC<{ techniques?: string[] }> = React.memo(({ techniques }) => {
   if (!techniques || techniques.length === 0) return <span className="text-threat-muted text-sm">-</span>;
 
   const visible = techniques.slice(0, 3);
@@ -20,4 +22,4 @@ export const MitreTags: React.FC<{ techniques?: string[] }> = ({ techniques }) =
       )}
     </div>
   );
-};
+});

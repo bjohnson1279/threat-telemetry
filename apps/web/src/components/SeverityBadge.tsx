@@ -1,7 +1,9 @@
 import React from 'react';
 import { ThreatSeverity } from '@threat-telemetry/shared';
 
-export const SeverityBadge: React.FC<{ severity: ThreatSeverity }> = ({ severity }) => {
+// ⚡ Bolt: [performance improvement]
+// Memoize to prevent unnecessary re-renders in IndicatorTable rows
+export const SeverityBadge: React.FC<{ severity: ThreatSeverity }> = React.memo(({ severity }) => {
   const colors = {
     [ThreatSeverity.LOW]: 'bg-threat-low/20 text-threat-low border-threat-low/50',
     [ThreatSeverity.MED]: 'bg-threat-med/20 text-threat-med border-threat-med/50',
@@ -15,4 +17,4 @@ export const SeverityBadge: React.FC<{ severity: ThreatSeverity }> = ({ severity
       {severity}
     </span>
   );
-};
+});
