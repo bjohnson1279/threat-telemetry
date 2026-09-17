@@ -74,11 +74,12 @@ describe('Indicators Routes', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.INTERNAL_API_KEY = 'test-internal-api-key';
   });
 
   it('should test ingest endpoint with valid JSON payload', async () => {
     const req = {
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-api-key': 'test-internal-api-key' },
       body: {
         indicators: [
           { value: '192.168.1.1', type: 'IP', rawPayload: {} }
@@ -99,7 +100,7 @@ describe('Indicators Routes', () => {
 
   it('should test ingest endpoint with invalid payload', async () => {
     const req = {
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-api-key': 'test-internal-api-key' },
       body: {
         indicators: [
           { type: 'IP' } // Missing value
@@ -170,12 +171,39 @@ describe('Indicators Routes', () => {
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Validation Error' }));
   });
 
+  it('should return 401 when API key is missing on ingest endpoint', async () => {
+    const req = {
+      headers: { 'content-type': 'application/json' },
+      body: {
+        indicators: [
+          { value: '192.168.1.1', type: 'IP', rawPayload: {} }
+        ]
+      }
+    };
+    const res = mockResponse();
+
+    await executeRoute('post', '/', req, res, mockNext);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
+  });
+
+  it('should return 401 when API key is missing on enrich endpoint', async () => {
+    const req = { params: { id: '12345678-1234-1234-1234-123456789012' }, headers: {} };
+    const res = mockResponse();
+
+    await executeRoute('post', '/:id/enrich', req, res, mockNext);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Unauthorized' });
+  });
+
   it('should test enrichment endpoint trigger', async () => {
     // Set dummy API keys for test
     process.env.LLM_PROVIDER = 'openai';
     process.env.OPENAI_API_KEY = 'test';
 
-    const req = { params: { id: '12345678-1234-1234-1234-123456789012' }, headers: {} };
+    const req = { params: { id: '12345678-1234-1234-1234-123456789012' }, headers: { 'x-api-key': 'test-internal-api-key' } };
     const res = mockResponse();
 
     (prisma.threatIndicator.findUnique as any).mockResolvedValue({

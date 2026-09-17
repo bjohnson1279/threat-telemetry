@@ -19,9 +19,19 @@ const idParamSchema = z.object({
 
 const router: Router = Router();
 
+const requireApiKey = (req: Request, res: Response, next: any) => {
+  const apiKey = req.headers['x-api-key'];
+  if (!apiKey || apiKey !== process.env.INTERNAL_API_KEY) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  next();
+};
+
 // Endpoint: POST /api/v1/ingest
 router.post(
   '/', // When mounted at /ingest or /indicators/ingest
+  requireApiKey,
   async (req: Request, res: Response, next) => {
     try {
       let rawIndicators = [];
@@ -214,7 +224,7 @@ router.get('/:id', validate(idParamSchema, 'params'), async (req: Request, res: 
 });
 
 // Endpoint: POST /api/v1/indicators/:id/enrich
-router.post('/:id/enrich', validate(idParamSchema, 'params'), async (req: Request, res: Response, next) => {
+router.post('/:id/enrich', requireApiKey, validate(idParamSchema, 'params'), async (req: Request, res: Response, next) => {
   try {
     const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({

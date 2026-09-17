@@ -24,3 +24,8 @@
 **Vulnerability:** DoS and memory exhaustion due to unbounded bulk ingestion payloads and large payload sizes in JSON and CSV format
 **Learning:** Even if the express body parser implements a byte size limit, massive logical bulk limits or unconstrained individual string/array field lengths can cause excessive DB load and memory exhaustion when mapping arrays to ORM models.
 **Prevention:** Always enforce both maximum logical bounds on array lengths (`rawIndicators.length > 10000`) and Zod `.max()` on all inner structures like strings and arrays.
+
+## 2026-09-17 - [CRITICAL] Missing Authentication on Sensitive Endpoints
+**Vulnerability:** The `/api/v1/ingest` and `/api/v1/indicators/:id/enrich` endpoints were lacking any authentication or authorization checks.
+**Learning:** Any endpoint that modifies data or calls external services (e.g. LLM providers) without authentication is a massive risk. Attackers can spam these endpoints resulting in data poisoning (ingesting arbitrary bad indicators) and massive billing costs/denial of service on external integrations.
+**Prevention:** Always ensure endpoints that mutate state or rely on expensive external services require some form of authentication (like `requireApiKey` middleware) and that requests originate from a trusted source.
