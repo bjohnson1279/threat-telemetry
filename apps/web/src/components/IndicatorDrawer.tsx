@@ -12,8 +12,19 @@ interface IndicatorDrawerProps {
 
 export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onClose, onEnriched }) => {
   const [enriching, setEnriching] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   if (!indicator) return null;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(indicator.indicatorValue);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error('Failed to copy', e);
+    }
+  };
 
   const handleEnrich = async () => {
     try {
@@ -33,8 +44,18 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
       
       <div className="relative w-full max-w-xl h-full bg-threat-surface border-l border-threat-border shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0">
         <div className="flex items-center justify-between p-6 border-b border-threat-border bg-threat-bg/50">
-          <h2 id="drawer-title" className="text-xl font-mono text-threat-text break-all pr-4">{indicator.indicatorValue}</h2>
-          <button onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none">&times;</button>
+          <div className="flex items-center space-x-3 pr-4 min-w-0">
+            <h2 id="drawer-title" className="text-xl font-mono text-threat-text break-all">{indicator.indicatorValue}</h2>
+            <button
+              onClick={handleCopy}
+              aria-label="Copy indicator value"
+              title="Copy indicator value"
+              className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded p-1 flex-shrink-0"
+            >
+              {copied ? '✅' : '📋'}
+            </button>
+          </div>
+          <button onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0">&times;</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
