@@ -1,5 +1,8 @@
 FROM node:22-alpine AS builder
 
+ARG VITE_INTERNAL_API_KEY
+ENV VITE_INTERNAL_API_KEY=$VITE_INTERNAL_API_KEY
+
 WORKDIR /app
 
 RUN npm install -g pnpm@9.15.4

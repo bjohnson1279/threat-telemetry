@@ -74,11 +74,15 @@ describe('Indicators Routes', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.INTERNAL_API_KEY = 'test-internal-key';
   });
 
   it('should test ingest endpoint with valid JSON payload', async () => {
     const req = {
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': 'test-internal-key'
+      },
       body: {
         indicators: [
           { value: '192.168.1.1', type: 'IP', rawPayload: {} }
@@ -99,7 +103,10 @@ describe('Indicators Routes', () => {
 
   it('should test ingest endpoint with invalid payload', async () => {
     const req = {
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': 'test-internal-key'
+      },
       body: {
         indicators: [
           { type: 'IP' } // Missing value
@@ -175,7 +182,12 @@ describe('Indicators Routes', () => {
     process.env.LLM_PROVIDER = 'openai';
     process.env.OPENAI_API_KEY = 'test';
 
-    const req = { params: { id: '12345678-1234-1234-1234-123456789012' }, headers: {} };
+    const req = {
+      params: { id: '12345678-1234-1234-1234-123456789012' },
+      headers: {
+        'x-api-key': 'test-internal-key'
+      }
+    };
     const res = mockResponse();
 
     (prisma.threatIndicator.findUnique as any).mockResolvedValue({
@@ -203,5 +215,25 @@ describe('Indicators Routes', () => {
       id: '12345678-1234-1234-1234-123456789012',
       severity: 'HIGH'
     }));
+  });
+
+  it('should reject unauthorized request to ingest endpoint', async () => {
+    const req = {
+      headers: {
+        'content-type': 'application/json'
+        // Missing x-api-key
+      },
+      body: {
+        indicators: [
+          { value: '192.168.1.1', type: 'IP', rawPayload: {} }
+        ]
+      }
+    };
+    const res = mockResponse();
+
+    await executeRoute('post', '/', req, res, mockNext);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
   });
 });

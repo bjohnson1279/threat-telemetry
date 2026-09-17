@@ -8,6 +8,7 @@ import {
 } from '@threat-telemetry/shared';
 import { prisma } from '../lib/prisma.js';
 import { validate } from '../middleware/validate.js';
+import { requireAuth } from '../middleware/auth.js';
 import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
@@ -22,6 +23,7 @@ const router: Router = Router();
 // Endpoint: POST /api/v1/ingest
 router.post(
   '/', // When mounted at /ingest or /indicators/ingest
+  requireAuth,
   async (req: Request, res: Response, next) => {
     try {
       let rawIndicators = [];
@@ -214,7 +216,7 @@ router.get('/:id', validate(idParamSchema, 'params'), async (req: Request, res: 
 });
 
 // Endpoint: POST /api/v1/indicators/:id/enrich
-router.post('/:id/enrich', validate(idParamSchema, 'params'), async (req: Request, res: Response, next) => {
+router.post('/:id/enrich', validate(idParamSchema, 'params'), requireAuth, async (req: Request, res: Response, next) => {
   try {
     const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
