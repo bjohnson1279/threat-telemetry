@@ -29,7 +29,9 @@ export const StatsCards: React.FC = () => {
   );
 };
 
-const Card = ({ title, value, icon, color }: { title: string; value: string | number; icon: string; color: string }) => (
+// ⚡ Bolt: [performance improvement]
+// Memoize to prevent unnecessary re-renders when polling stats
+const Card = React.memo(({ title, value, icon, color }: { title: string; value: string | number; icon: string; color: string }) => (
   <div className="bg-threat-surface border border-threat-border rounded-lg p-4 flex items-center justify-between shadow-lg">
     <div>
       <p className="text-threat-muted text-sm font-medium uppercase tracking-wider mb-1">{title}</p>
@@ -37,4 +39,4 @@ const Card = ({ title, value, icon, color }: { title: string; value: string | nu
     </div>
     <div className="text-3xl opacity-80">{icon}</div>
   </div>
-);
+));

@@ -1,6 +1,8 @@
 import React from 'react';
 
-export const ConfidenceBar: React.FC<{ confidence: number }> = ({ confidence }) => {
+// ⚡ Bolt: [performance improvement]
+// Memoize to prevent unnecessary re-renders in IndicatorTable rows
+export const ConfidenceBar: React.FC<{ confidence: number }> = React.memo(({ confidence }) => {
   let colorClass = 'bg-threat-low';
   if (confidence >= 85) colorClass = 'bg-threat-critical';
   else if (confidence >= 70) colorClass = 'bg-threat-high';
@@ -21,4 +23,4 @@ export const ConfidenceBar: React.FC<{ confidence: number }> = ({ confidence }) 
       <span className="text-xs font-mono w-8 text-right" aria-hidden="true">{confidence}%</span>
     </div>
   );
-};
+});

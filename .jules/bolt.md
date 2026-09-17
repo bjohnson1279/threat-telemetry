@@ -28,3 +28,7 @@
 ## 2026-09-17 - Backend caching for frontend polling
 **Learning:** Frequent polling from frontend components (e.g. stats panels via `setInterval`) creates substantial database load when fetching heavy aggregations.
 **Action:** Implement simple, short-TTL in-memory caching directly in the backend endpoint serving the polled data to decouple polling frequency from database load.
+
+## 2026-09-17 - React component re-rendering
+**Learning:** In lists like IndicatorTable and frequently polled components like StatsCards, stateless presentation components are re-rendered unnecessarily on every data update.
+**Action:** Use `React.memo()` to wrap presentation components (e.g., SeverityBadge, ConfidenceBar, MitreTags) to prevent costly DOM re-renders when parent state updates.
