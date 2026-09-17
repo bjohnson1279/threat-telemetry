@@ -21,3 +21,6 @@
 ## 2026-09-16 - Keyboard shortcut visual hints
 **Learning:** When adding keyboard shortcuts (like '/' to focus search), users often discover them by accident or not at all unless visually hinted. Adding a non-intrusive `<kbd>` hint directly in the input that disappears on typing provides excellent, non-blocking discoverability.
 **Action:** When implementing global keyboard shortcuts for primary inputs, add a small, styled `<kbd>` element inside the input's visual bounds, hide it when the input has value to not interfere with text, and ensure the `aria-label` includes the shortcut hint.
+## 2026-09-17 - [Add copy button to indicator drawer]
+**Learning:** Analysts frequently need to copy IOC values (like IPs or hashes) to paste into external tools, so providing a one-click copy button next to the indicator value improves the workflow significantly. Adding immediate visual feedback (like swapping icons briefly) enhances the perceived reliability of this action.
+**Action:** Always add a copy-to-clipboard button to key values in detail views or drawers, ensuring they have appropriate aria-labels and keyboard focus styling.
