@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { 
-  ingestPayloadSchema, 
+import {
+  ingestPayloadSchema,
   threatIndicatorFilterSchema,
   normalizeIndicatorValue,
   chunkArray,
@@ -13,7 +13,6 @@ import { ThreatEnrichmentService } from '../services/enrichment.js';
 import { logger } from '../lib/logger.js';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
-import rateLimit from 'express-rate-limit';
 
 const idParamSchema = z.object({
   id: z.string().uuid(),
@@ -216,16 +215,8 @@ router.get('/:id', validate(idParamSchema, 'params'), async (req: Request, res: 
   }
 });
 
-// Sentinel: HIGH - Prevent Financial Exhaustion / DoS
-// The global API rate limit is too permissive for computationally expensive
-// and financially costly LLM API calls. Applying a strict route-level limiter.
-const enrichmentLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 enrichment requests per windowMs
-});
-
 // Endpoint: POST /api/v1/indicators/:id/enrich
-router.post('/:id/enrich', enrichmentLimiter, validate(idParamSchema, 'params'), requireAuth, async (req: Request, res: Response, next) => {
+router.post('/:id/enrich', validate(idParamSchema, 'params'), requireAuth, async (req: Request, res: Response, next) => {
   try {
     const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({
