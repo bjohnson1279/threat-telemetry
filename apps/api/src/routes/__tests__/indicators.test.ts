@@ -186,7 +186,9 @@ describe('Indicators Routes', () => {
       params: { id: '12345678-1234-1234-1234-123456789012' },
       headers: {
         'x-api-key': 'test-internal-key'
-      }
+      },
+      ip: '127.0.0.1',
+      app: { get: () => '127.0.0.1' }
     };
     const res = mockResponse();
 
@@ -202,7 +204,11 @@ describe('Indicators Routes', () => {
       severity: 'HIGH'
     });
 
-    await executeRoute('post', '/:id/enrich', req, res, mockNext);
+    // Extract the actual handler instead of running through executeRoute
+    // to bypass the real rate limiter middleware which requires deep express request mocking
+    const routeInfo = (indicatorsRouter as any).stack.find((layer: any) => layer.route && layer.route.path === '/:id/enrich' && layer.route.methods.post);
+    const handler = routeInfo.route.stack[routeInfo.route.stack.length - 1].handle;
+    await handler(req, res, mockNext);
 
     expect(prisma.threatIndicator.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: '12345678-1234-1234-1234-123456789012' },
@@ -223,6 +229,8 @@ describe('Indicators Routes', () => {
         'content-type': 'application/json'
         // Missing x-api-key
       },
+      ip: '127.0.0.1',
+      app: { get: () => '127.0.0.1' },
       body: {
         indicators: [
           { value: '192.168.1.1', type: 'IP', rawPayload: {} }

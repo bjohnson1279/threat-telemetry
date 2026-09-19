@@ -28,3 +28,7 @@
 **Vulnerability:** The API endpoints `/api/v1/ingest` and `/api/v1/indicators/:id/enrich` lacked any form of authentication, allowing unauthenticated attackers to ingest arbitrary threat data or trigger computationally expensive LLM enrichment jobs, leading to data poisoning or denial of service/financial exhaustion.
 **Learning:** Internal APIs accessed by frontend components must still enforce authentication, such as an API key, to prevent unauthorized external actors from abusing the endpoints.
 **Prevention:** Always apply authentication middleware (e.g., checking `x-api-key` against environment variables) to sensitive endpoints like data ingestion and external service triggers.
+## 2026-09-19 - [HIGH] Prevent Financial Exhaustion/DoS via Missing Specific Rate Limits
+**Vulnerability:** The LLM enrichment endpoint (`POST /api/v1/indicators/:id/enrich`) was only protected by the global API rate limiter (100 requests per 15 minutes). Since this endpoint performs computationally expensive external LLM API calls, an authenticated attacker or compromised client could exhaust API quotas and cause severe financial impact or service denial within the global limit.
+**Learning:** Global rate limits are often too permissive for specific expensive or sensitive endpoints (e.g., those triggering LLMs, sending emails, or doing heavy cryptography).
+**Prevention:** Always implement route-specific, stricter rate limiting (e.g., using `express-rate-limit`) on top of global limits for any endpoint that incurs financial cost or significant computational overhead.
