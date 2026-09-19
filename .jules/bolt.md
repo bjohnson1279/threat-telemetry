@@ -32,3 +32,7 @@
 ## 2026-09-17 - React component re-rendering
 **Learning:** In lists like IndicatorTable and frequently polled components like StatsCards, stateless presentation components are re-rendered unnecessarily on every data update.
 **Action:** Use `React.memo()` to wrap presentation components (e.g., SeverityBadge, ConfidenceBar, MitreTags) to prevent costly DOM re-renders when parent state updates.
+
+## 2026-09-18 - React List Row Memoization
+**Learning:** In lists like `IndicatorTable` that map over large arrays (e.g., up to 100 items), anonymous mapping functions or unmemoized row components cause every single row to undergo a virtual DOM re-render when any parent state (like the `selectedIndicator` for a side drawer) changes. This creates a severe rendering bottleneck.
+**Action:** Extract list items (like table rows) into their own distinct stateless functional components (e.g., `IndicatorRow`) and wrap them in `React.memo()`. Pass stable props (like primitive data or unchanged objects) to ensure unchanged rows skip rendering entirely.

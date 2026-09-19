@@ -8,6 +8,32 @@ import { FilterBar } from './FilterBar';
 import { Pagination } from './Pagination';
 import { IndicatorDrawer } from './IndicatorDrawer';
 
+// ⚡ Bolt: [performance improvement]
+// Memoize individual table rows to prevent re-rendering all rows when the parent state (like selectedIndicator or drawer state) changes.
+// Expected impact: Eliminates wasteful Virtual DOM re-renders of up to 100 rows when opening/closing the drawer.
+const IndicatorRow = React.memo(({ ind, index, onClick }: { ind: ThreatIndicator, index: number, onClick: (ind: ThreatIndicator) => void }) => (
+  <tr
+    className={`hover:bg-threat-border/30 transition-colors cursor-pointer ${index % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`}
+    onClick={() => onClick(ind)}
+  >
+    <td className="p-4 font-mono truncate max-w-[200px]" title={ind.indicatorValue}>{ind.indicatorValue}</td>
+    <td className="p-4"><span className="px-2 py-1 bg-threat-border rounded text-xs">{ind.indicatorType}</span></td>
+    <td className="p-4"><SeverityBadge severity={ind.severity} /></td>
+    <td className="p-4"><ConfidenceBar confidence={ind.confidenceScore} /></td>
+    <td className="p-4"><MitreTags techniques={ind.mitreTechniques} /></td>
+    <td className="p-4 text-threat-muted text-xs whitespace-nowrap">{new Date(ind.firstSeen).toLocaleDateString()}</td>
+    <td className="p-4 text-right">
+      <button
+        aria-label={`View indicator ${ind.indicatorValue}`}
+        className="px-3 py-1 text-xs bg-threat-border hover:bg-threat-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors"
+        onClick={(e) => { e.stopPropagation(); onClick(ind); }}
+      >
+        View
+      </button>
+    </td>
+  </tr>
+));
+
 export const IndicatorTable: React.FC = () => {
   const { indicators, loading, filters, setFilters, totalPages, page, setPage, refresh } = useIndicators();
   const [selectedIndicator, setSelectedIndicator] = useState<ThreatIndicator | null>(null);
@@ -74,27 +100,12 @@ export const IndicatorTable: React.FC = () => {
                 </tr>
               ) : (
                 indicators.map((ind, i) => (
-                  <tr 
+                  <IndicatorRow
                     key={ind.id} 
-                    className={`hover:bg-threat-border/30 transition-colors cursor-pointer ${i % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`}
-                    onClick={() => setSelectedIndicator(ind)}
-                  >
-                    <td className="p-4 font-mono truncate max-w-[200px]" title={ind.indicatorValue}>{ind.indicatorValue}</td>
-                    <td className="p-4"><span className="px-2 py-1 bg-threat-border rounded text-xs">{ind.indicatorType}</span></td>
-                    <td className="p-4"><SeverityBadge severity={ind.severity} /></td>
-                    <td className="p-4"><ConfidenceBar confidence={ind.confidenceScore} /></td>
-                    <td className="p-4"><MitreTags techniques={ind.mitreTechniques} /></td>
-                    <td className="p-4 text-threat-muted text-xs whitespace-nowrap">{new Date(ind.firstSeen).toLocaleDateString()}</td>
-                    <td className="p-4 text-right">
-                      <button 
-                        aria-label={`View indicator ${ind.indicatorValue}`}
-                        className="px-3 py-1 text-xs bg-threat-border hover:bg-threat-accent hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors"
-                        onClick={(e) => { e.stopPropagation(); setSelectedIndicator(ind); }}
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
+                    ind={ind}
+                    index={i}
+                    onClick={setSelectedIndicator}
+                  />
                 ))
               )}
             </tbody>
