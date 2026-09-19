@@ -11,6 +11,7 @@ export const rawIndicatorSchema = z.object({
   source: z.string().max(256).optional(),
   tags: z.array(z.string().max(256)).max(100).optional(),
   metadata: z.record(z.unknown()).optional(),
+  rawPayload: z.record(z.unknown()).optional(),
 });
 
 export const ingestPayloadSchema = z.object({
