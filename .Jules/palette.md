@@ -27,3 +27,7 @@
 ## 2026-09-18 - Inline Actions for Repetitive Workflows
 **Learning:** Analysts frequently need to extract/copy indicator values (IPs, hashes) directly from lists. Opening a drawer or detail view just to copy a value adds unnecessary friction. Hiding inline actions (like a copy button) until row hover or focus provides the utility without cluttering the UI.
 **Action:** Add inline copy buttons (with `opacity-0 group-hover:opacity-100 focus-visible:opacity-100`) to indicator values in list views to streamline analyst workflows.
+
+## 2026-09-19 - Modal/Drawer Escape Key Handling
+**Learning:** Modals, drawers, and overlay components often trap users who navigate via keyboard if they lack an explicit keyboard shortcut to dismiss them.
+**Action:** Always add an `Escape` key listener (typically via `useEffect` bound to `window`) to allow users to easily dismiss modals or drawers intuitively, ensuring it correctly unbinds on unmount.

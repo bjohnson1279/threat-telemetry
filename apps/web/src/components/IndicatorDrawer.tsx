@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThreatIndicator } from '@threat-telemetry/shared';
 import { SeverityBadge } from './SeverityBadge';
 import { ConfidenceBar } from './ConfidenceBar';
@@ -13,6 +13,20 @@ interface IndicatorDrawerProps {
 export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onClose, onEnriched }) => {
   const [enriching, setEnriching] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (indicator) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [indicator, onClose]);
 
   if (!indicator) return null;
 
