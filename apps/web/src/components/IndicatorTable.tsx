@@ -8,15 +8,45 @@ import { FilterBar } from './FilterBar';
 import { Pagination } from './Pagination';
 import { IndicatorDrawer } from './IndicatorDrawer';
 
+const CopyButton: React.FC<{ value: string }> = ({ value }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.error('Failed to copy', e);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      aria-label={`Copy indicator ${value}`}
+      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0"
+    >
+      {copied ? '✅' : '📋'}
+    </button>
+  );
+};
+
 // ⚡ Bolt: [performance improvement]
 // Memoize individual table rows to prevent re-rendering all rows when the parent state (like selectedIndicator or drawer state) changes.
 // Expected impact: Eliminates wasteful Virtual DOM re-renders of up to 100 rows when opening/closing the drawer.
 const IndicatorRow = React.memo(({ ind, index, onClick }: { ind: ThreatIndicator, index: number, onClick: (ind: ThreatIndicator) => void }) => (
   <tr
-    className={`hover:bg-threat-border/30 transition-colors cursor-pointer ${index % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`}
+    className={`hover:bg-threat-border/30 transition-colors cursor-pointer group ${index % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`}
     onClick={() => onClick(ind)}
   >
-    <td className="p-4 font-mono truncate max-w-[200px]" title={ind.indicatorValue}>{ind.indicatorValue}</td>
+    <td className="p-4 font-mono max-w-[200px]" title={ind.indicatorValue}>
+      <div className="flex items-center space-x-2">
+        <span className="flex-1 min-w-0 truncate">{ind.indicatorValue}</span>
+        <CopyButton value={ind.indicatorValue} />
+      </div>
+    </td>
     <td className="p-4"><span className="px-2 py-1 bg-threat-border rounded text-xs">{ind.indicatorType}</span></td>
     <td className="p-4"><SeverityBadge severity={ind.severity} /></td>
     <td className="p-4"><ConfidenceBar confidence={ind.confidenceScore} /></td>

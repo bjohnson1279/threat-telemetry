@@ -24,3 +24,6 @@
 ## 2026-09-17 - [Add copy button to indicator drawer]
 **Learning:** Analysts frequently need to copy IOC values (like IPs or hashes) to paste into external tools, so providing a one-click copy button next to the indicator value improves the workflow significantly. Adding immediate visual feedback (like swapping icons briefly) enhances the perceived reliability of this action.
 **Action:** Always add a copy-to-clipboard button to key values in detail views or drawers, ensuring they have appropriate aria-labels and keyboard focus styling.
+## 2026-09-18 - Inline Actions for Repetitive Workflows
+**Learning:** Analysts frequently need to extract/copy indicator values (IPs, hashes) directly from lists. Opening a drawer or detail view just to copy a value adds unnecessary friction. Hiding inline actions (like a copy button) until row hover or focus provides the utility without cluttering the UI.
+**Action:** Add inline copy buttons (with `opacity-0 group-hover:opacity-100 focus-visible:opacity-100`) to indicator values in list views to streamline analyst workflows.
