@@ -27,3 +27,7 @@
 ## 2026-09-18 - Inline Actions for Repetitive Workflows
 **Learning:** Analysts frequently need to extract/copy indicator values (IPs, hashes) directly from lists. Opening a drawer or detail view just to copy a value adds unnecessary friction. Hiding inline actions (like a copy button) until row hover or focus provides the utility without cluttering the UI.
 **Action:** Add inline copy buttons (with `opacity-0 group-hover:opacity-100 focus-visible:opacity-100`) to indicator values in list views to streamline analyst workflows.
+
+## 2026-09-19 - Inline Copy for Raw Data blocks
+**Learning:** Analysts frequently need to copy full JSON raw data payloads. A dedicated copy button next to raw code blocks improves the extraction workflow.
+**Action:** Add dedicated copy buttons to raw data blocks or code blocks with visual feedback.

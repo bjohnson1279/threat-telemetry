@@ -37,6 +37,6 @@ const Card = React.memo(({ title, value, icon, color }: { title: string; value: 
       <p className="text-threat-muted text-sm font-medium uppercase tracking-wider mb-1">{title}</p>
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
     </div>
-    <div className="text-3xl opacity-80">{icon}</div>
+    <div className="text-3xl opacity-80" aria-hidden="true">{icon}</div>
   </div>
 ));
