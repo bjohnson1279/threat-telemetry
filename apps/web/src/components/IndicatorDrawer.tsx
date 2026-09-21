@@ -13,6 +13,7 @@ interface IndicatorDrawerProps {
 export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onClose, onEnriched }) => {
   const [enriching, setEnriching] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [jsonCopied, setJsonCopied] = useState(false);
 
   if (!indicator) return null;
 
@@ -23,6 +24,16 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
       console.error('Failed to copy', e);
+    }
+  };
+
+  const handleCopyJson = async () => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(indicator, null, 2));
+      setJsonCopied(true);
+      setTimeout(() => setJsonCopied(false), 2000);
+    } catch (e) {
+      console.error('Failed to copy JSON', e);
     }
   };
 
@@ -110,7 +121,17 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           </section>
 
           <section>
-            <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2">Raw Data</h3>
+            <div className="flex items-center justify-between border-b border-threat-border mb-4 pb-2">
+              <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider">Raw Data</h3>
+              <button
+                onClick={handleCopyJson}
+                aria-label="Copy raw JSON data"
+                title="Copy raw JSON data"
+                className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 flex-shrink-0"
+              >
+                {jsonCopied ? '✅' : '📋'}
+              </button>
+            </div>
             <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto">
               <pre className="text-xs font-mono text-threat-muted">
                 {JSON.stringify(indicator, null, 2)}

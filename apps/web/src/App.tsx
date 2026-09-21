@@ -6,7 +6,7 @@ function App() {
     <div className="min-h-screen p-6 max-w-[1920px] mx-auto flex flex-col">
       <header className="mb-8 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="text-4xl">🛡️</div>
+          <div className="text-4xl" aria-hidden="true">🛡️</div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-white">Threat Telemetry Gateway</h1>
             <p className="text-threat-muted text-sm mt-1">Real-time IOC monitoring and AI-driven enrichment</p>
