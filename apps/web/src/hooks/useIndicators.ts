@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ThreatIndicator, ThreatIndicatorFilter } from '@threat-telemetry/shared';
 import { fetchIndicators } from '../lib/api';
 
@@ -14,8 +14,6 @@ export function useIndicators() {
     pageSize: 10,
     search: '',
   });
-
-  const searchTimeout = useRef<number | null>(null);
 
   const load = useCallback(async (activeFilters: ThreatIndicatorFilter) => {
     try {
@@ -37,17 +35,10 @@ export function useIndicators() {
   }, [load, filters]);
 
   useEffect(() => {
-    if (searchTimeout.current) {
-      window.clearTimeout(searchTimeout.current);
-    }
-
-    searchTimeout.current = window.setTimeout(() => {
-      load(filters);
-    }, 300);
-
-    return () => {
-      if (searchTimeout.current) window.clearTimeout(searchTimeout.current);
-    };
+    // ⚡ Bolt: [performance improvement]
+    // Removed global filter debounce. Search is now debounced locally in FilterBar,
+    // meaning pagination and dropdown interactions instantly trigger a fetch.
+    load(filters);
   }, [filters, load]);
 
   useEffect(() => {

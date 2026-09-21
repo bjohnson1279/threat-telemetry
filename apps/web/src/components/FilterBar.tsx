@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ThreatIndicatorFilter, IndicatorType, ThreatSeverity } from '@threat-telemetry/shared';
 
 interface FilterBarProps {
@@ -8,6 +8,24 @@ interface FilterBarProps {
 
 export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [localSearch, setLocalSearch] = useState(filters.search || '');
+
+  // ⚡ Bolt: [performance improvement]
+  // Debounce search input locally to reduce unnecessary parent state updates
+  // Expected impact: Allows instant filtering for other fields while still rate-limiting API calls for search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if ((localSearch || undefined) !== filters.search) {
+        setFilters(prev => ({ ...prev, search: localSearch || undefined, page: 1 }));
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearch, filters.search, setFilters]);
+
+  // Sync back from parent if cleared remotely
+  useEffect(() => {
+    setLocalSearch(filters.search || '');
+  }, [filters.search]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,19 +50,19 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
           aria-label="Search indicators (Press / to focus)"
           placeholder="Search indicators..."
           className="w-full bg-threat-bg border border-threat-border rounded px-4 py-2 pl-9 pr-12 text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
-          value={filters.search || ''}
-          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
         />
-        {!filters.search && (
+        {!localSearch && (
           <kbd className="absolute right-3 top-2.5 px-2 py-0.5 text-xs text-threat-muted bg-threat-surface border border-threat-border rounded shadow-sm hidden sm:inline-block pointer-events-none" aria-hidden="true">
             /
           </kbd>
         )}
-        {filters.search && (
+        {localSearch && (
           <button
             type="button"
             aria-label="Clear search"
-            onClick={() => setFilters(prev => ({ ...prev, search: undefined, page: 1 }))}
+            onClick={() => setLocalSearch('')}
             className="absolute right-2 top-2.5 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded-full leading-none flex items-center justify-center w-5 h-5 text-lg"
           >
             &times;
