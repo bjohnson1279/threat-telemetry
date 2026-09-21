@@ -32,3 +32,8 @@
 **Vulnerability:** The LLM enrichment endpoint (`POST /api/v1/indicators/:id/enrich`) was only protected by the global API rate limiter (100 requests per 15 minutes). Since this endpoint performs computationally expensive external LLM API calls, an authenticated attacker or compromised client could exhaust API quotas and cause severe financial impact or service denial within the global limit.
 **Learning:** Global rate limits are often too permissive for specific expensive or sensitive endpoints (e.g., those triggering LLMs, sending emails, or doing heavy cryptography).
 **Prevention:** Always implement route-specific, stricter rate limiting (e.g., using `express-rate-limit`) on top of global limits for any endpoint that incurs financial cost or significant computational overhead.
+
+## 2026-09-20 - [HIGH] API Key Timing Attack Vulnerability
+**Vulnerability:** The API key validation in `apps/api/src/middleware/auth.ts` was using a simple string comparison (`apiKey !== validKey`) instead of a constant-time comparison, which is vulnerable to timing attacks allowing an attacker to guess the secret key character by character.
+**Learning:** Comparing secrets such as API keys using regular equality operators evaluates strings character by character and stops at the first mismatched character, leaking the length of the matched prefix.
+**Prevention:** Always use a constant-time comparison function like `crypto.timingSafeEqual` after verifying the lengths of the strings are equal. Both strings should be converted to buffers of equal length before comparison.
