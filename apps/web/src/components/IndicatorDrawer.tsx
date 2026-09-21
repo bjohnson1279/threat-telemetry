@@ -63,7 +63,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
               title="Copy indicator value"
               className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded p-1 flex-shrink-0"
             >
-              {copied ? '✅' : '📋'}
+              <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
             </button>
           </div>
           <button onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0">&times;</button>
@@ -99,7 +99,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           {indicator.enrichmentSummary && (
             <section>
               <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
-                <span className="mr-2">🤖</span> AI Analyst Brief
+                <span className="mr-2" aria-hidden="true">🤖</span> AI Analyst Brief
               </h3>
               <div className="bg-threat-bg border border-threat-border rounded-lg p-4 text-sm leading-relaxed text-threat-text/90">
                 {indicator.enrichmentSummary}
@@ -129,7 +129,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
                 title="Copy raw JSON data"
                 className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 flex-shrink-0"
               >
-                {jsonCopied ? '✅' : '📋'}
+                <span aria-hidden="true">{jsonCopied ? '✅' : '📋'}</span>
               </button>
             </div>
             <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto">
@@ -155,7 +155,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
                 Enriching...
               </>
             ) : (
-              '✨ Trigger Enrichment'
+              <><span aria-hidden="true">✨</span> Trigger Enrichment</>
             )}
           </button>
         </div>

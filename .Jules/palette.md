@@ -31,3 +31,7 @@
 ## 2026-09-19 - Inline Copy for Raw Data blocks
 **Learning:** Analysts frequently need to copy full JSON raw data payloads. A dedicated copy button next to raw code blocks improves the extraction workflow.
 **Action:** Add dedicated copy buttons to raw data blocks or code blocks with visual feedback.
+
+## 2026-09-21 - Hide decorative emojis from screen readers
+**Learning:** Emojis used for purely visual purposes (like copy icons, decorative ✨ or 🤖) are often read aloud by screen readers, creating annoying and confusing auditory clutter.
+**Action:** Always wrap decorative emojis in a `<span aria-hidden="true">`, or add `aria-hidden="true"` to their containing elements, when they don't provide extra semantic meaning.
