@@ -28,7 +28,7 @@ const CopyButton: React.FC<{ value: string }> = ({ value }) => {
       aria-label={`Copy indicator ${value}`}
       className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0"
     >
-      {copied ? '✅' : '📋'}
+      <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
     </button>
   );
 };
@@ -116,7 +116,7 @@ export const IndicatorTable: React.FC = () => {
               ) : indicators.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-12 text-center text-threat-muted">
-                    <div className="text-4xl mb-4 opacity-50">🔍</div>
+                    <div className="text-4xl mb-4 opacity-50" aria-hidden="true">🔍</div>
                     <p className="mb-4">No indicators found matching the current filters.</p>
                     {(filters.search || filters.indicatorType || filters.severity || (filters.minConfidence && filters.minConfidence > 0)) && (
                       <button
