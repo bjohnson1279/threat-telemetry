@@ -39,3 +39,7 @@
 ## 2026-09-20 - Global Debounce Anti-Pattern
 **Learning:** Applying a global debounce to an entire filter state object slows down interactions for inputs that should be instant (like dropdowns and pagination), causing UI lag.
 **Action:** Remove global debouncing on filter state. Implement targeted local debouncing directly on text inputs (like search bars) before updating parent state.
+
+## 2026-09-24 - Prisma Chunk Array Batch Insertion
+**Learning:** Running sequential independent chunk insertions with Prisma `createManyAndReturn` inside a `for...of` loop causes unnecessary N+1 roundtrip delays over the network during bulk data ingestion.
+**Action:** Use `Promise.all()` to parallelize mapping over chunk arrays for batch insertions, significantly reducing database ingestion roundtrips.
