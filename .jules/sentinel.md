@@ -37,3 +37,7 @@
 **Vulnerability:** The API key validation in `apps/api/src/middleware/auth.ts` was using a simple string comparison (`apiKey !== validKey`) instead of a constant-time comparison, which is vulnerable to timing attacks allowing an attacker to guess the secret key character by character.
 **Learning:** Comparing secrets such as API keys using regular equality operators evaluates strings character by character and stops at the first mismatched character, leaking the length of the matched prefix.
 **Prevention:** Always use a constant-time comparison function like `crypto.timingSafeEqual` after verifying the lengths of the strings are equal. Both strings should be converted to buffers of equal length before comparison.
+## 2026-09-25 - [HIGH] Hardcoded CORS Origin
+**Vulnerability:** The API server had a hardcoded CORS origin of `http://localhost:5173`. This configuration is overly rigid and prevents the API from being safely accessed in staging or production environments unless the origin is dynamically controlled.
+**Learning:** Hardcoding local development URLs in CORS policies creates integration bottlenecks and potential misconfigurations in production environments where the API needs to restrict access strictly to trusted production domains.
+**Prevention:** Always configure CORS origins to be driven by environment variables (e.g., `process.env.FRONTEND_URL`) with a safe default for local development.
