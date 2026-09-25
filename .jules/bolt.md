@@ -39,3 +39,7 @@
 ## 2026-09-20 - Global Debounce Anti-Pattern
 **Learning:** Applying a global debounce to an entire filter state object slows down interactions for inputs that should be instant (like dropdowns and pagination), causing UI lag.
 **Action:** Remove global debouncing on filter state. Implement targeted local debouncing directly on text inputs (like search bars) before updating parent state.
+
+## 2026-09-25 - Concurrent Batch Insertions
+**Learning:** Iterating through data chunks and calling `createManyAndReturn` sequentially in a loop creates sequential network roundtrip bottlenecks during large ingestions.
+**Action:** Use `Promise.all()` to run chunked bulk insert operations concurrently, which significantly reduces total insertion time by eliminating sequential delays.
