@@ -60,17 +60,16 @@ router.post(
       }));
 
       const chunks = chunkArray(formattedIndicators, 100);
-      let ingestedCount = 0;
-      let allIds: string[] = [];
 
-      for (const chunk of chunks) {
-        // ⚡ Bolt: [performance improvement]
-        // Use createManyAndReturn to batch insert rows instead of sequential inserts in a transaction.
-        // Expected impact: Eliminates N+1 database roundtrips per ingested chunk.
-        const created = await prisma.threatIndicator.createManyAndReturn({ data: chunk });
-        ingestedCount += created.length;
-        allIds.push(...created.map((c) => c.id));
-      }
+      // ⚡ Bolt: [performance improvement]
+      // Run chunked createManyAndReturn operations concurrently instead of sequentially
+      // Expected impact: Eliminates sequential network roundtrip bottlenecks during large ingestions
+      const results = await Promise.all(
+        chunks.map(chunk => prisma.threatIndicator.createManyAndReturn({ data: chunk }))
+      );
+
+      const allIds = results.flatMap(created => created.map(c => c.id));
+      const ingestedCount = results.reduce((acc, created) => acc + created.length, 0);
 
       res.status(201).json({
         ingested: ingestedCount,
