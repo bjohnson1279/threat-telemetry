@@ -35,3 +35,7 @@
 ## 2026-09-21 - Hide decorative emojis from screen readers
 **Learning:** Emojis used for purely visual purposes (like copy icons, decorative ✨ or 🤖) are often read aloud by screen readers, creating annoying and confusing auditory clutter.
 **Action:** Always wrap decorative emojis in a `<span aria-hidden="true">`, or add `aria-hidden="true"` to their containing elements, when they don't provide extra semantic meaning.
+
+## 2026-09-28 - Restoring Focus on Element Unmount
+**Learning:** Found a pattern where conditionally rendered interactive elements (like the "Clear search" button) unmount upon activation. For keyboard users, this causes a sudden loss of focus (focus drops to the `document.body`), breaking keyboard navigation.
+**Action:** When an interactive element (like a clear button or close button) unmounts itself upon activation, programmatically restore focus to a logical next element (e.g., the associated input field) using a React ref to maintain a smooth, accessible experience.
