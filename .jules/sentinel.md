@@ -37,3 +37,13 @@
 **Vulnerability:** The API key validation in `apps/api/src/middleware/auth.ts` was using a simple string comparison (`apiKey !== validKey`) instead of a constant-time comparison, which is vulnerable to timing attacks allowing an attacker to guess the secret key character by character.
 **Learning:** Comparing secrets such as API keys using regular equality operators evaluates strings character by character and stops at the first mismatched character, leaking the length of the matched prefix.
 **Prevention:** Always use a constant-time comparison function like `crypto.timingSafeEqual` after verifying the lengths of the strings are equal. Both strings should be converted to buffers of equal length before comparison.
+
+## 2026-09-22 - [HIGH] Missing Timeout on External API Calls
+**Vulnerability:** External `fetch` calls to LLM providers (OpenAI/Anthropic) in `ThreatEnrichmentService` lacked timeout configurations. Native Node.js `fetch` does not time out by default, which can cause the enrichment worker or API endpoints to hang indefinitely if the provider is unresponsive, leading to connection exhaustion and DoS.
+**Learning:** Always provide an `AbortSignal.timeout()` when calling external HTTP APIs to ensure your service fails fast and securely unblocks resources.
+**Prevention:** Use `signal: AbortSignal.timeout(ms)` in all external `fetch` calls.
+
+## 2026-09-22 - [MEDIUM] Overly Permissive CORS Configuration
+**Vulnerability:** CORS in the Express API was strictly hardcoded to `http://localhost:5173`. While safe for local development, this creates severe deployment bottlenecks. Developers often "fix" this bottleneck in staging or production by switching to a wildcard `origin: '*'`, which exposes the API to unauthorized cross-origin requests.
+**Learning:** Hardcoding restrictive settings that break in production often leads to developers completely bypassing security controls (like using wildcards) just to get things working.
+**Prevention:** Drive CORS configurations dynamically via environment variables (e.g., `process.env.FRONTEND_URL`) so that production URLs can be safely explicitly allowed without resorting to wildcards.

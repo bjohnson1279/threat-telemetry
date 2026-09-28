@@ -113,6 +113,9 @@ Do not include markdown blocks or any other text outside the JSON.`;
         response_format: { type: 'json_object' },
         temperature: 0.1,
       }),
+      // Sentinel: [security improvement]
+      // Added AbortSignal.timeout to prevent indefinite hang / connection exhaustion
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
@@ -137,6 +140,9 @@ Do not include markdown blocks or any other text outside the JSON.`;
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
       }),
+      // Sentinel: [security improvement]
+      // Added AbortSignal.timeout to prevent indefinite hang / connection exhaustion
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
