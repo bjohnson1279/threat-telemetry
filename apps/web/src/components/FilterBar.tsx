@@ -62,7 +62,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
           <button
             type="button"
             aria-label="Clear search"
-            onClick={() => setLocalSearch('')}
+            onClick={() => {
+              setLocalSearch('');
+              searchInputRef.current?.focus();
+            }}
             className="absolute right-2 top-2.5 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded-full leading-none flex items-center justify-center w-5 h-5 text-lg"
           >
             &times;
