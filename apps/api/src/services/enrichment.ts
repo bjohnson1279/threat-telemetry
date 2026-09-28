@@ -101,6 +101,7 @@ Do not include markdown blocks or any other text outside the JSON.`;
   }
 
   private async callOpenAI(prompt: string): Promise<string> {
+    // Sentinel: MEDIUM - Prevent indefinite hangs / DoS
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -113,6 +114,7 @@ Do not include markdown blocks or any other text outside the JSON.`;
         response_format: { type: 'json_object' },
         temperature: 0.1,
       }),
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {
@@ -124,6 +126,7 @@ Do not include markdown blocks or any other text outside the JSON.`;
   }
 
   private async callAnthropic(prompt: string): Promise<string> {
+    // Sentinel: MEDIUM - Prevent indefinite hangs / DoS
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -137,6 +140,7 @@ Do not include markdown blocks or any other text outside the JSON.`;
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
       }),
+      signal: AbortSignal.timeout(30000),
     });
 
     if (!response.ok) {

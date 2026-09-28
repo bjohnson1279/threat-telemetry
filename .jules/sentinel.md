@@ -37,3 +37,8 @@
 **Vulnerability:** The API key validation in `apps/api/src/middleware/auth.ts` was using a simple string comparison (`apiKey !== validKey`) instead of a constant-time comparison, which is vulnerable to timing attacks allowing an attacker to guess the secret key character by character.
 **Learning:** Comparing secrets such as API keys using regular equality operators evaluates strings character by character and stops at the first mismatched character, leaking the length of the matched prefix.
 **Prevention:** Always use a constant-time comparison function like `crypto.timingSafeEqual` after verifying the lengths of the strings are equal. Both strings should be converted to buffers of equal length before comparison.
+
+## 2026-09-28 - [MEDIUM] Missing Timeout on External API Calls
+**Vulnerability:** External HTTP requests (like LLM fetch calls) were missing timeout constraints. An unresponsive external service could cause the fetch request to hang indefinitely, potentially leading to connection pool exhaustion and denial of service (DoS) in the Node.js process.
+**Learning:** Native Node.js `fetch` does not impose a default timeout, meaning a slow external API could tie up resources indefinitely.
+**Prevention:** Always include a timeout configuration, such as `signal: AbortSignal.timeout(30000)`, when using native Node.js fetch to ensure requests fail fast and resources are freed.
