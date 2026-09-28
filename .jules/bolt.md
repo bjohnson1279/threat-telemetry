@@ -39,3 +39,11 @@
 ## 2026-09-20 - Global Debounce Anti-Pattern
 **Learning:** Applying a global debounce to an entire filter state object slows down interactions for inputs that should be instant (like dropdowns and pagination), causing UI lag.
 **Action:** Remove global debouncing on filter state. Implement targeted local debouncing directly on text inputs (like search bars) before updating parent state.
+
+## 2026-09-21 - Parallelized chunk inserts with Promise.all
+**Learning:** Sequential `for...of` loop over chunk arrays for batch operations (like `createManyAndReturn`) introduces unnecessary network roundtrips between chunk operations, which severely slows down bulk ingestion of thousands of records.
+**Action:** Use `Promise.all()` to wrap and run chunked batch operations concurrently instead of processing them sequentially.
+
+## 2026-09-22 - Controlled DB concurrency for chunked ingestion
+**Learning:** While wrapping independent chunked DB inserts in an unbounded `Promise.all()` removes N+1 bottlenecks, doing so over large arrays causes severe database connection pool exhaustion (e.g. Prisma P2024 timeouts) and nondeterministic ordering bugs when aggregating results in callback functions.
+**Action:** Always wrap concurrent DB operations using bounded concurrency (e.g. batching array chunks into smaller concurrent batches like 5) and wait for them sequentially, accumulating the promise results explicitly to maintain ordering and prevent DB connection timeouts.
