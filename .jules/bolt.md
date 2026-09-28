@@ -39,3 +39,6 @@
 ## 2026-09-20 - Global Debounce Anti-Pattern
 **Learning:** Applying a global debounce to an entire filter state object slows down interactions for inputs that should be instant (like dropdowns and pagination), causing UI lag.
 **Action:** Remove global debouncing on filter state. Implement targeted local debouncing directly on text inputs (like search bars) before updating parent state.
+## 2026-09-28 - Bounded Concurrency for Bulk Inserts
+**Learning:** Sequential chunk inserts create N+1 network latency, while unbounded `Promise.all` causes connection pool exhaustion (Prisma P2024 timeouts).
+**Action:** Use bounded concurrency (e.g., parallel batches of 5 chunks) with `Promise.all` to safely maximize database throughput without hitting connection limits.

@@ -63,13 +63,21 @@ router.post(
       let ingestedCount = 0;
       let allIds: string[] = [];
 
-      for (const chunk of chunks) {
-        // ⚡ Bolt: [performance improvement]
-        // Use createManyAndReturn to batch insert rows instead of sequential inserts in a transaction.
-        // Expected impact: Eliminates N+1 database roundtrips per ingested chunk.
-        const created = await prisma.threatIndicator.createManyAndReturn({ data: chunk });
-        ingestedCount += created.length;
-        allIds.push(...created.map((c) => c.id));
+      // ⚡ Bolt: [performance improvement]
+      // Use bounded concurrency to batch insert chunks in parallel, eliminating sequential wait times
+      // without exhausting the database connection pool (which causes Prisma P2024 timeouts).
+      // Expected impact: Significantly faster overall ingestion for large CSVs/payloads.
+      const CONCURRENCY_LIMIT = 5;
+      for (let i = 0; i < chunks.length; i += CONCURRENCY_LIMIT) {
+        const batch = chunks.slice(i, i + CONCURRENCY_LIMIT);
+        const results = await Promise.all(
+          batch.map(chunk => prisma.threatIndicator.createManyAndReturn({ data: chunk }))
+        );
+
+        for (const created of results) {
+          ingestedCount += created.length;
+          allIds.push(...created.map((c) => c.id));
+        }
       }
 
       res.status(201).json({
