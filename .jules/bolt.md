@@ -47,3 +47,7 @@
 ## 2026-09-22 - Controlled DB concurrency for chunked ingestion
 **Learning:** While wrapping independent chunked DB inserts in an unbounded `Promise.all()` removes N+1 bottlenecks, doing so over large arrays causes severe database connection pool exhaustion (e.g. Prisma P2024 timeouts) and nondeterministic ordering bugs when aggregating results in callback functions.
 **Action:** Always wrap concurrent DB operations using bounded concurrency (e.g. batching array chunks into smaller concurrent batches like 5) and wait for them sequentially, accumulating the promise results explicitly to maintain ordering and prevent DB connection timeouts.
+
+## 2026-09-29 - Range Slider Continuous Events
+**Learning:** Removing global filter debouncing to make dropdowns and pagination instant inadvertently causes `type="range"` inputs to fire `onChange` continuously while dragging, spamming the backend API with dozens of requests per second.
+**Action:** When migrating from global to targeted debouncing, always explicitly debounce range sliders and text inputs locally before updating the parent state, ensuring instant interactions for other elements without causing an API DDoS.

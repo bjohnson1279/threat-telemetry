@@ -9,6 +9,7 @@ interface FilterBarProps {
 export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [localSearch, setLocalSearch] = useState(filters.search || '');
+  const [localMinConfidence, setLocalMinConfidence] = useState(filters.minConfidence || 0);
 
   // ⚡ Bolt: [performance improvement]
   // Debounce search input locally to reduce unnecessary parent state updates
@@ -22,10 +23,23 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
     return () => clearTimeout(timer);
   }, [localSearch, filters.search, setFilters]);
 
+  // ⚡ Bolt: [performance improvement]
+  // Debounce range slider locally to prevent continuous API spam while dragging
+  // Expected impact: Drastically reduces API load when users slide the confidence filter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localMinConfidence !== (filters.minConfidence || 0)) {
+        setFilters(prev => ({ ...prev, minConfidence: localMinConfidence, page: 1 }));
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localMinConfidence, filters.minConfidence, setFilters]);
+
   // Sync back from parent if cleared remotely
   useEffect(() => {
     setLocalSearch(filters.search || '');
-  }, [filters.search]);
+    setLocalMinConfidence(filters.minConfidence || 0);
+  }, [filters.search, filters.minConfidence]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -105,10 +119,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
           min="0"
           max="100"
           className="w-24 accent-threat-accent cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
-          value={filters.minConfidence || 0}
-          onChange={(e) => setFilters(prev => ({ ...prev, minConfidence: parseInt(e.target.value), page: 1 }))}
+          value={localMinConfidence}
+          onChange={(e) => setLocalMinConfidence(parseInt(e.target.value))}
         />
-        <span className="text-sm w-7 text-right tabular-nums" aria-hidden="true">{filters.minConfidence || 0}%</span>
+        <span className="text-sm w-7 text-right tabular-nums" aria-hidden="true">{localMinConfidence}%</span>
       </div>
     </div>
   );
