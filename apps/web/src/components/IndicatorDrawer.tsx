@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThreatIndicator } from '@threat-telemetry/shared';
 import { SeverityBadge } from './SeverityBadge';
 import { ConfidenceBar } from './ConfidenceBar';
@@ -14,6 +14,25 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
   const [enriching, setEnriching] = useState(false);
   const [copied, setCopied] = useState(false);
   const [jsonCopied, setJsonCopied] = useState(false);
+
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (indicator) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
+      // Small timeout to ensure the drawer is mounted and visible before focusing
+      const timer = setTimeout(() => {
+        closeButtonRef.current?.focus();
+      }, 10);
+      return () => {
+        clearTimeout(timer);
+        if (previousFocusRef.current) {
+          previousFocusRef.current.focus();
+        }
+      };
+    }
+  }, [indicator]);
 
   if (!indicator) return null;
 
@@ -59,14 +78,14 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             <h2 id="drawer-title" className="text-xl font-mono text-threat-text break-all">{indicator.indicatorValue}</h2>
             <button
               onClick={handleCopy}
-              aria-label="Copy indicator value"
-              title="Copy indicator value"
+              aria-label={copied ? 'Copied indicator value!' : 'Copy indicator value'}
+              title={copied ? 'Copied indicator value!' : 'Copy indicator value'}
               className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded p-1 flex-shrink-0"
             >
               <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
             </button>
           </div>
-          <button onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0">&times;</button>
+          <button ref={closeButtonRef} onClick={onClose} aria-label="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0">&times;</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
@@ -125,8 +144,8 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
               <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider">Raw Data</h3>
               <button
                 onClick={handleCopyJson}
-                aria-label="Copy raw JSON data"
-                title="Copy raw JSON data"
+                aria-label={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
+                title={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
                 className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 flex-shrink-0"
               >
                 <span aria-hidden="true">{jsonCopied ? '✅' : '📋'}</span>
