@@ -39,3 +39,6 @@
 ## 2026-09-27 - Prevent focus loss on conditionally rendered elements
 **Learning:** When a conditionally rendered interactive element (like a 'Clear search' button) unmounts upon activation, it causes sudden focus loss for keyboard users.
 **Action:** Programmatically restore focus to a logical next element (e.g., the input field) using a React ref.
+## 2026-09-29 - Dynamic aria-labels for ephemeral states
+**Learning:** When using state-based visual indicators (like swapping a 📋 icon to a ✅ icon for 'copied'), screen readers might miss the ephemeral feedback if the `aria-label` remains static. Also, trapping/shifting focus to dialogs/drawers correctly helps accessibility immensely.
+**Action:** Dynamically update `aria-label` and `title` based on ephemeral states, and ensure proper focus trapping/restoration when mounting/unmounting modals.
