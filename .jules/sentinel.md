@@ -37,3 +37,7 @@
 **Vulnerability:** The API key validation in `apps/api/src/middleware/auth.ts` was using a simple string comparison (`apiKey !== validKey`) instead of a constant-time comparison, which is vulnerable to timing attacks allowing an attacker to guess the secret key character by character.
 **Learning:** Comparing secrets such as API keys using regular equality operators evaluates strings character by character and stops at the first mismatched character, leaking the length of the matched prefix.
 **Prevention:** Always use a constant-time comparison function like `crypto.timingSafeEqual` after verifying the lengths of the strings are equal. Both strings should be converted to buffers of equal length before comparison.
+## 2026-09-29 - Sentinel: Prevent Resource Exhaustion via Hung API Calls
+**Vulnerability:** External network requests to LLM providers (OpenAI, Anthropic) in the ThreatEnrichmentService lacked timeouts. If the external provider hangs, the Node.js request remains open indefinitely, potentially exhausting server resources and leading to Denial of Service (DoS).
+**Learning:** Relying on default network behavior or global timeouts is insufficient for specific, synchronous, third-party API dependencies. Every outgoing `fetch` request must explicitly defend against hung connections.
+**Prevention:** Always attach an `AbortSignal.timeout(ms)` to the `signal` property of `fetch` requests to guarantee they fail fast and release resources if the external service is unresponsive.
