@@ -31,11 +31,11 @@ export const errorHandler = (
   const status = err.status || 500;
 
   // Sentinel: Medium - Fix Information Leakage
-  // Only expose raw error messages in development or if the status is not 500
+  // Only expose raw error messages in development
   // to avoid leaking sensitive internal details like stack traces or service failures.
-  const message = (status === 500 && !isDev)
-    ? 'Internal Server Error'
-    : (err.message || 'Internal Server Error');
+  const message = isDev
+    ? (err.message || 'Internal Server Error')
+    : 'Internal Server Error';
 
   res.status(status).json({
     error: message,
