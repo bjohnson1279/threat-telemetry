@@ -85,3 +85,8 @@
 ## 2026-09-29 - Non-Destructive Security Patching & CI Protection
 **Learning:** Security patches must never weaken CI workflow files (`.github/workflows/**`) by appending `|| true` or `continue-on-error: true` to suppress test/build failures. Furthermore, when adding defensive type assertions or input validators in TypeScript, omitting explicit types can introduce `TS7006: Parameter implicitly has an 'any' type`.
 **Action:** Never modify CI workflow definitions to bypass test failures; resolve the underlying issue in source code or test fixtures. Always provide explicit types on newly introduced parameters and helper functions. Ensure zero scratch scripts (`fix_*.php`, `test_*.js`) are committed.
+
+## 2026-09-30 - [HIGH] Prevent Rate Limiter Bypass / DoS via Trust Proxy Configuration
+**Vulnerability:** The Express API was using `express-rate-limit` without configuring `app.set("trust proxy", 1)`. When the API is deployed behind a reverse proxy or load balancer, omitting this configuration causes `req.ip` to resolve to the proxy IP rather than the true client IP, allowing attackers to bypass rate limits via header spoofing or causing a DoS for all users.
+**Learning:** Setting `trust proxy` is required for rate limiting, IP banning, and logging to function securely in production environments behind proxies.
+**Prevention:** Always verify and set the correct `trust proxy` configuration (e.g. `app.set("trust proxy", 1)`) before setting up IP-based security middleware in Express.
