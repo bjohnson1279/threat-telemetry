@@ -71,3 +71,7 @@
 ## 2026-09-29 - Surgical Optimization Edits and No Scratch Script Commits
 **Learning:** Running whole-file formatters or regenerating entire components while performing performance optimizations introduces massive whitespace/formatting diffs (1,000+ lines), masking the real optimization, invalidating git blame, and causing painful merge conflicts with concurrent PRs. Additionally, committing scratch benchmark or patch scripts (`patch_*.py`, `test.cjs`) pollutes production repositories and triggers CI guardrail failures.
 **Action:** Restrict all algorithmic and performance optimizations to strictly scoped replacement chunks. Diff size must reflect only the functional optimization. Always clean up temporary benchmark or patch scripts with `git rm -f` before committing.
+
+## 2026-09-30 - Enum Iteration Inside Loops
+**Learning:** Calling `Object.values(Enum)` creates a new array every time it is evaluated. Placing this inside a loop that parses thousands of rows (like CSV processing) and using `.includes()` causes massive array allocation overhead and $O(N)$ linear scans per row, bottlenecking CPU and memory.
+**Action:** Extract `Object.values()` out of the loop and convert it into a `Set`. Use `Set.has()` inside the loop for $O(1)$ constant-time lookup, completely eliminating the per-row garbage collection strain.

@@ -44,6 +44,10 @@ export const csvRowSchema = z.object({
   tags: z.string().max(10000).optional(),
 });
 
+// ⚡ Bolt: [performance improvement]
+// Cache valid indicator types in a Set outside the loop to prevent O(N) array allocation and search per row
+const validIndicatorTypes = new Set<string>(Object.values(IndicatorType));
+
 export function parseCSVPayload(csvContent: string): RawIndicator[] {
   const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   if (lines.length === 0) return [];
@@ -61,11 +65,9 @@ export function parseCSVPayload(csvContent: string): RawIndicator[] {
 
     const parsed = csvRowSchema.safeParse(rowObj);
     if (parsed.success) {
-      const typeStr = parsed.data.type as keyof typeof IndicatorType;
-      const type = IndicatorType[typeStr] || IndicatorType.DOMAIN; 
       results.push({
         value: parsed.data.value,
-        type: (Object.values(IndicatorType) as string[]).includes(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
+        type: validIndicatorTypes.has(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
         source: parsed.data.source,
         tags: parsed.data.tags ? parsed.data.tags.split(';') : [],
       });
