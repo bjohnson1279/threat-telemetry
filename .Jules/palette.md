@@ -80,3 +80,7 @@
 ## 2026-09-29 - Scope Verification for Async Loading Attributes
 **Learning:** Blindly injecting `disabled={loading}` or `aria-busy={loading}` into JSX/TSX buttons causes fatal TypeScript compilation errors (`TS2304: Cannot find name 'loading'`) when `loading` is not declared in component props, state hooks (`useState`), or mutation results. Furthermore, using temporary patch scripts (`fix_*.cjs`) to manipulate source code pollutes the git index.
 **Action:** Before referencing any state identifier (such as `loading`, `isSubmitting`, `isPending`) in `disabled` or `aria-busy`, inspect the component scope. If no loading state is tracked, define it using `useState(false)` or check existing query/mutation hooks. Never bind undeclared variables. Always run `tsc --noEmit` locally and never commit temporary fix scripts.
+
+## 2026-09-30 - Explicit error states for data views
+**Learning:** Falling back to an empty state during a silent API failure confuses users into thinking there is no data. Explicit error states with clear recovery actions are necessary for data views.
+**Action:** Always surface error states from data hooks visually to the user, and provide a clear recovery action (like a 'Try Again' button).
