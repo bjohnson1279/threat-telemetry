@@ -71,3 +71,7 @@
 ## 2026-09-29 - Surgical Optimization Edits and No Scratch Script Commits
 **Learning:** Running whole-file formatters or regenerating entire components while performing performance optimizations introduces massive whitespace/formatting diffs (1,000+ lines), masking the real optimization, invalidating git blame, and causing painful merge conflicts with concurrent PRs. Additionally, committing scratch benchmark or patch scripts (`patch_*.py`, `test.cjs`) pollutes production repositories and triggers CI guardrail failures.
 **Action:** Restrict all algorithmic and performance optimizations to strictly scoped replacement chunks. Diff size must reflect only the functional optimization. Always clean up temporary benchmark or patch scripts with `git rm -f` before committing.
+
+## 2026-10-01 - Array Include vs Set Has inside loops
+**Learning:** In TypeScript/JavaScript, converting object values to an array (e.g. `Object.values(Enum)`) inside a loop over a large dataset (like parsing rows in a CSV) creates severe memory overhead due to repeated allocations, and using `.includes()` introduces O(n) scan times per row. Moving the check to a `Set` placed inside the function body is a good start, but still re-computes the Set on every function invocation (e.g. every CSV upload).
+**Action:** Extract static Enum or valid allowed values into a `Set` at the module level so it is only allocated once per application lifecycle, providing O(1) lookups inside parsing loops across all invocations.
