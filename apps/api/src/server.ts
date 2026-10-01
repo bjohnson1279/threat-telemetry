@@ -13,6 +13,10 @@ import { prisma } from './lib/prisma.js';
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Sentinel: [security improvement]
+// Ensure express-rate-limit tracks the actual client IP behind reverse proxies/Docker
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet());
 // Sentinel: [security improvement]
