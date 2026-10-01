@@ -2,7 +2,22 @@ import React from 'react';
 import { useStats } from '../hooks/useStats';
 
 export const StatsCards: React.FC = () => {
-  const { stats, loading } = useStats();
+  const { stats, loading, error, refresh } = useStats();
+
+  if (error) {
+    return (
+      <div className="mb-6 p-6 bg-threat-surface border border-threat-border rounded-lg shadow-lg text-center flex flex-col items-center justify-center">
+        <div className="text-3xl mb-2 opacity-50" aria-hidden="true">⚠️</div>
+        <p className="text-threat-critical mb-4">{error}</p>
+        <button
+          onClick={refresh}
+          className="px-4 py-2 bg-threat-bg border border-threat-border hover:bg-threat-border hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors text-sm"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   if (loading && !stats) {
     return (

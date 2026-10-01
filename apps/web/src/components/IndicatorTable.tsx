@@ -66,7 +66,7 @@ const IndicatorRow = React.memo(({ ind, index, onClick }: { ind: ThreatIndicator
 ));
 
 export const IndicatorTable: React.FC = () => {
-  const { indicators, loading, filters, setFilters, totalPages, page, setPage, refresh } = useIndicators();
+  const { indicators, loading, error, filters, setFilters, totalPages, page, setPage, refresh } = useIndicators();
   const [selectedIndicator, setSelectedIndicator] = useState<ThreatIndicator | null>(null);
 
   // Handle ESC to close drawer
@@ -102,7 +102,20 @@ export const IndicatorTable: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-threat-border/50 text-sm">
-              {loading && indicators.length === 0 ? (
+              {error ? (
+                <tr>
+                  <td colSpan={7} className="p-12 text-center text-threat-muted">
+                    <div className="text-4xl mb-4 opacity-50" aria-hidden="true">⚠️</div>
+                    <p className="mb-4 text-threat-critical">{error}</p>
+                    <button
+                      onClick={refresh}
+                      className="px-4 py-2 bg-threat-surface border border-threat-border hover:bg-threat-border hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors text-sm"
+                    >
+                      Try Again
+                    </button>
+                  </td>
+                </tr>
+              ) : loading && indicators.length === 0 ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse bg-threat-surface">
                     <td className="p-4"><div className="h-4 bg-threat-border rounded w-3/4"></div></td>
