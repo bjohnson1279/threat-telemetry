@@ -26,6 +26,11 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.text({ type: 'text/csv', limit: '10mb' }));
 
+// Sentinel: [HIGH] Prevent Rate Limiter Bypass / DoS
+// Trust the first proxy to ensure rate limits and IP bans work correctly
+// when deployed behind a reverse proxy/load balancer.
+app.set('trust proxy', 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
