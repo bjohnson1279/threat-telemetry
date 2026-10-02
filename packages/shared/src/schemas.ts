@@ -44,6 +44,11 @@ export const csvRowSchema = z.object({
   tags: z.string().max(10000).optional(),
 });
 
+// ⚡ Bolt: [performance improvement]
+// Cache Enum values in a module-level Set to prevent O(n) array allocations
+// inside the parsing loop.
+const VALID_INDICATOR_TYPES = new Set<string>(Object.values(IndicatorType) as string[]);
+
 export function parseCSVPayload(csvContent: string): RawIndicator[] {
   const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   if (lines.length === 0) return [];
@@ -65,7 +70,7 @@ export function parseCSVPayload(csvContent: string): RawIndicator[] {
       const type = IndicatorType[typeStr] || IndicatorType.DOMAIN; 
       results.push({
         value: parsed.data.value,
-        type: (Object.values(IndicatorType) as string[]).includes(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
+        type: VALID_INDICATOR_TYPES.has(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
         source: parsed.data.source,
         tags: parsed.data.tags ? parsed.data.tags.split(';') : [],
       });
