@@ -13,6 +13,10 @@ import { prisma } from './lib/prisma.js';
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Sentinel: HIGH - Fix Rate Limiting Global DoS Risk Behind Proxy
+// Trust the first proxy to ensure rate limiting uses the correct client IP
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet());
 // Sentinel: [security improvement]
