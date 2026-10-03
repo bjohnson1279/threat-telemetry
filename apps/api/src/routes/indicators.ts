@@ -35,6 +35,11 @@ router.post(
         rawIndicators = parseCSVPayload(csvContent);
       } else {
         // Assume JSON
+        // Early DoS check: reject if indicators array is too large before running expensive Zod validation
+        if (Array.isArray(req.body?.indicators) && req.body.indicators.length > 10000) {
+          res.status(413).json({ error: 'Payload too large: maximum 10,000 indicators allowed' });
+          return;
+        }
         const parsedBody = ingestPayloadSchema.parse(req.body);
         rawIndicators = parsedBody.indicators;
       }
