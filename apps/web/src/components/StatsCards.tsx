@@ -2,7 +2,24 @@ import React from 'react';
 import { useStats } from '../hooks/useStats';
 
 export const StatsCards: React.FC = () => {
-  const { stats, loading } = useStats();
+  const { stats, loading, error, refresh } = useStats();
+
+  if (error && !stats) {
+    return (
+      <div className="mb-6 p-6 bg-threat-surface border border-threat-border rounded-lg flex flex-col items-center justify-center space-y-3">
+        <div className="flex items-center space-x-2 text-threat-critical">
+          <span aria-hidden="true">⚠️</span>
+          <p className="font-medium">Failed to load statistics</p>
+        </div>
+        <button
+          onClick={refresh}
+          className="px-4 py-1.5 bg-threat-bg hover:bg-threat-border border border-threat-border rounded text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent text-threat-text"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   if (loading && !stats) {
     return (
