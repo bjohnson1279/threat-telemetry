@@ -85,3 +85,8 @@
 ## 2026-09-29 - Non-Destructive Security Patching & CI Protection
 **Learning:** Security patches must never weaken CI workflow files (`.github/workflows/**`) by appending `|| true` or `continue-on-error: true` to suppress test/build failures. Furthermore, when adding defensive type assertions or input validators in TypeScript, omitting explicit types can introduce `TS7006: Parameter implicitly has an 'any' type`.
 **Action:** Never modify CI workflow definitions to bypass test failures; resolve the underlying issue in source code or test fixtures. Always provide explicit types on newly introduced parameters and helper functions. Ensure zero scratch scripts (`fix_*.php`, `test_*.js`) are committed.
+
+## 2026-10-03 - [CRITICAL] Memory DoS via String Splitting for Validation
+**Vulnerability:** When validating the size of massive payloads (like raw CSV strings) before processing, using `string.split('\n')` to count lines allocates a massive array in memory. For huge payloads, this can trigger an Out-Of-Memory (OOM) crash, creating a DoS vulnerability.
+**Learning:** String splitting is not memory-safe for unbounded or extremely large inputs.
+**Prevention:** Do not use `string.split('\n')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
