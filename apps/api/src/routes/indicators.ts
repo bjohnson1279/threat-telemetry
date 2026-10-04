@@ -32,6 +32,16 @@ router.post(
 
       if (contentType.includes('text/csv')) {
         const csvContent = req.body.toString();
+        let lineCount = 0;
+        for (let i = 0; i < csvContent.length; i++) {
+          if (csvContent[i] === '\n') {
+            lineCount++;
+            if (lineCount > 10000) {
+              res.status(413).json({ error: 'Payload too large: maximum 10,000 indicators allowed' });
+              return;
+            }
+          }
+        }
         rawIndicators = parseCSVPayload(csvContent);
       } else {
         // Assume JSON

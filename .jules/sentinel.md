@@ -90,3 +90,10 @@
 **Vulnerability:** When validating the size of massive payloads (like raw CSV strings) before processing, using `string.split('\n')` to count lines allocates a massive array in memory. For huge payloads, this can trigger an Out-Of-Memory (OOM) crash, creating a DoS vulnerability.
 **Learning:** String splitting is not memory-safe for unbounded or extremely large inputs.
 **Prevention:** Do not use `string.split('\n')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
+
+## 2026-10-04 - [CRITICAL] Memory DoS via String Splitting for Validation
+**Vulnerability:** When validating the size of massive payloads (like raw CSV strings) before processing, using `string.split('
+')` to count lines allocates a massive array in memory. For huge payloads, this can trigger an Out-Of-Memory (OOM) crash, creating a DoS vulnerability.
+**Learning:** String splitting is not memory-safe for unbounded or extremely large inputs.
+**Prevention:** Do not use `string.split('
+')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
