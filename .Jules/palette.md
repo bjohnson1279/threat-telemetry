@@ -84,3 +84,6 @@
 ## 2026-10-02 - Explicit Error States in Data Views
 **Learning:** Silent failures in data tables create confusion. Users need explicit error messages rather than a generic 'No data' state when an API call fails.
 **Action:** Always extract the 'error' state from data hooks and render a dedicated error UI with a 'Try Again' recovery action.
+## 2026-10-04 - [Add Explicit Inline Error Feedback for Async Drawer Actions]
+**Learning:** Silent failures in isolated overlay components (like drawers or modals) lead to severe user confusion since global error handlers (like toast notifications) may be visually disconnected or absent. We need explicit, localized error boundaries for complex async actions (like LLM enrichment).
+**Action:** Always implement semantic, inline error states with `role="alert"` immediately adjacent to the action button inside the drawer, clearing the state on successful retry or component unmount.
