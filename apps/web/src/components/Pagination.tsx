@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 interface PaginationProps {
   page: number;
@@ -9,6 +9,10 @@ interface PaginationProps {
 }
 
 export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, setPage, pageSize, setPageSize }) => {
+  const pageSizes = useMemo(() => [10, 25, 50, 100].map(size => (
+    <option key={size} value={size}>{size}</option>
+  )), []);
+
   return (
     <div className="flex items-center justify-between mt-4 p-4 bg-threat-surface border border-threat-border rounded-lg">
       <div className="flex items-center space-x-2">
@@ -19,9 +23,7 @@ export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, setPag
           value={pageSize}
           onChange={(e) => setPageSize(parseInt(e.target.value))}
         >
-          {[10, 25, 50, 100].map(size => (
-            <option key={size} value={size}>{size}</option>
-          ))}
+          {pageSizes}
         </select>
       </div>
       
