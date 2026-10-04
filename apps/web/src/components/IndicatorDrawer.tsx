@@ -12,6 +12,7 @@ interface IndicatorDrawerProps {
 
 export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onClose, onEnriched }) => {
   const [enriching, setEnriching] = useState(false);
+  const [enrichError, setEnrichError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [jsonCopied, setJsonCopied] = useState(false);
 
@@ -19,6 +20,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    setEnrichError(null);
     if (indicator) {
       previousFocusRef.current = document.activeElement as HTMLElement;
       // Small timeout to ensure the drawer is mounted and visible before focusing
@@ -59,10 +61,12 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
   const handleEnrich = async () => {
     try {
       setEnriching(true);
+      setEnrichError(null);
       const updated = await triggerEnrichment(indicator.id);
       if (onEnriched) onEnriched(updated);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Enrichment failed', e);
+      setEnrichError(e.message || 'Enrichment failed. Please try again.');
     } finally {
       setEnriching(false);
     }
@@ -159,7 +163,13 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           </section>
         </div>
 
-        <div className="p-4 border-t border-threat-border bg-threat-bg/50">
+        <div className="p-4 border-t border-threat-border bg-threat-bg/50 flex flex-col gap-3">
+          {enrichError && (
+            <div className="flex items-start space-x-2 text-threat-critical bg-threat-critical/10 border border-threat-critical/30 rounded p-3 text-sm" role="alert" aria-live="assertive">
+              <span className="mt-0.5" aria-hidden="true">⚠️</span>
+              <span>{enrichError}</span>
+            </div>
+          )}
           <button 
             onClick={handleEnrich} 
             disabled={enriching}
