@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 interface PaginationProps {
   page: number;
@@ -8,11 +8,15 @@ interface PaginationProps {
   setPageSize: (size: number) => void;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, setPage, pageSize, setPageSize }) => {
-  const pageSizes = useMemo(() => [10, 25, 50, 100].map(size => (
-    <option key={size} value={size}>{size}</option>
-  )), []);
+// ⚡ Bolt: [performance improvement]
+// Hoist static enum mappings outside the component to prevent array re-allocation
+// and avoid the overhead of useMemo with an empty dependency array.
+// Expected impact: Eliminates React lifecycle overhead during component renders.
+const pageSizes = [10, 25, 50, 100].map(size => (
+  <option key={size} value={size}>{size}</option>
+));
 
+export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, setPage, pageSize, setPageSize }) => {
   return (
     <div className="flex items-center justify-between mt-4 p-4 bg-threat-surface border border-threat-border rounded-lg">
       <div className="flex items-center space-x-2">

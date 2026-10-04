@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ThreatIndicatorFilter, IndicatorType, ThreatSeverity } from '@threat-telemetry/shared';
 
 interface FilterBarProps {
@@ -6,21 +6,22 @@ interface FilterBarProps {
   setFilters: React.Dispatch<React.SetStateAction<ThreatIndicatorFilter>>;
 }
 
+// ⚡ Bolt: [performance improvement]
+// Hoist static enum mappings outside the component to prevent array re-allocation
+// and avoid the overhead of useMemo with an empty dependency array.
+// Expected impact: Eliminates React lifecycle overhead during component renders.
+const indicatorTypeOptions = Object.values(IndicatorType).map(t => (
+  <option key={t} value={t}>{t}</option>
+));
+
+const threatSeverityOptions = Object.values(ThreatSeverity).map(s => (
+  <option key={s} value={s}>{s}</option>
+));
+
 export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [localSearch, setLocalSearch] = useState(filters.search || '');
   const [localMinConfidence, setLocalMinConfidence] = useState(filters.minConfidence || 0);
-
-  // ⚡ Bolt: [performance improvement]
-  // Memoize static enum mappings to prevent array re-allocation on every render
-  // Expected impact: Eliminates virtual DOM churn during local state updates (like range sliding).
-  const indicatorTypeOptions = useMemo(() => Object.values(IndicatorType).map(t => (
-    <option key={t} value={t}>{t}</option>
-  )), []);
-
-  const threatSeverityOptions = useMemo(() => Object.values(ThreatSeverity).map(s => (
-    <option key={s} value={s}>{s}</option>
-  )), []);
 
   // ⚡ Bolt: [performance improvement]
   // Debounce search input locally to reduce unnecessary parent state updates

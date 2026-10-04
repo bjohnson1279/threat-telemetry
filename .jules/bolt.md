@@ -75,3 +75,7 @@
 ## 2024-10-02 - Enum values array allocation inside loops
 **Learning:** Using `Object.values(Enum).includes()` inside a loop for parsing large datasets (like CSV payloads) causes redundant array allocations and O(n) lookups per row, severely degrading performance.
 **Action:** Cache the Enum values as a `Set` at the module level (outside the function) and use `Set.has()` for constant-time lookups.
+
+## 2026-10-04 - React component useMemo for static arrays
+**Learning:** Using `useMemo` with an empty dependency array `[]` to cache static arrays or Enum mappings inside a component adds unnecessary React lifecycle overhead with no measurable benefit.
+**Action:** Hoist static constants completely outside the functional component instead of using `useMemo`.
