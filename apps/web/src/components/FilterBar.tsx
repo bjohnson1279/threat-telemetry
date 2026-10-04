@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { ThreatIndicatorFilter, IndicatorType, ThreatSeverity } from '@threat-telemetry/shared';
 
 interface FilterBarProps {
@@ -10,6 +10,17 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [localSearch, setLocalSearch] = useState(filters.search || '');
   const [localMinConfidence, setLocalMinConfidence] = useState(filters.minConfidence || 0);
+
+  // ⚡ Bolt: [performance improvement]
+  // Memoize static enum mappings to prevent array re-allocation on every render
+  // Expected impact: Eliminates virtual DOM churn during local state updates (like range sliding).
+  const indicatorTypeOptions = useMemo(() => Object.values(IndicatorType).map(t => (
+    <option key={t} value={t}>{t}</option>
+  )), []);
+
+  const threatSeverityOptions = useMemo(() => Object.values(ThreatSeverity).map(s => (
+    <option key={s} value={s}>{s}</option>
+  )), []);
 
   // ⚡ Bolt: [performance improvement]
   // Debounce search input locally to reduce unnecessary parent state updates
@@ -94,9 +105,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
         onChange={(e) => setFilters(prev => ({ ...prev, indicatorType: e.target.value as IndicatorType || undefined, page: 1 }))}
       >
         <option value="">All Types</option>
-        {Object.values(IndicatorType).map(t => (
-          <option key={t} value={t}>{t}</option>
-        ))}
+        {indicatorTypeOptions}
       </select>
 
       <select
@@ -106,9 +115,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
         onChange={(e) => setFilters(prev => ({ ...prev, severity: e.target.value as ThreatSeverity || undefined, page: 1 }))}
       >
         <option value="">All Severities</option>
-        {Object.values(ThreatSeverity).map(s => (
-          <option key={s} value={s}>{s}</option>
-        ))}
+        {threatSeverityOptions}
       </select>
 
       <div className="flex items-center space-x-2 bg-threat-bg border border-threat-border rounded px-4 py-2">
