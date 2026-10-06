@@ -87,3 +87,7 @@
 ## 2026-10-04 - [Add Explicit Inline Error Feedback for Async Drawer Actions]
 **Learning:** Silent failures in isolated overlay components (like drawers or modals) lead to severe user confusion since global error handlers (like toast notifications) may be visually disconnected or absent. We need explicit, localized error boundaries for complex async actions (like LLM enrichment).
 **Action:** Always implement semantic, inline error states with `role="alert"` immediately adjacent to the action button inside the drawer, clearing the state on successful retry or component unmount.
+
+## 2026-10-06 - Dynamic titles for disabled elements
+**Learning:** When interactive elements (like pagination buttons) are conditionally disabled, users might lack context on why the action is unavailable.
+**Action:** Add dynamic `title` attributes to disabled elements (e.g., 'First page reached') to explicitly provide context.
