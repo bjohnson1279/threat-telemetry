@@ -50,13 +50,27 @@ export const csvRowSchema = z.object({
 const VALID_INDICATOR_TYPES = new Set<string>(Object.values(IndicatorType) as string[]);
 
 export function parseCSVPayload(csvContent: string): RawIndicator[] {
-  const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  if (lines.length === 0) return [];
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-  
   const results: RawIndicator[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim());
+  let headers: string[] | null = null;
+
+  let currentPos = 0;
+  while (currentPos < csvContent.length) {
+    let nextNewline = csvContent.indexOf('\n', currentPos);
+    if (nextNewline === -1) {
+      nextNewline = csvContent.length;
+    }
+
+    const line = csvContent.substring(currentPos, nextNewline).trim();
+    currentPos = nextNewline + 1;
+
+    if (line.length === 0) continue;
+
+    if (!headers) {
+      headers = line.split(',').map(h => h.trim().toLowerCase());
+      continue;
+    }
+
+    const values = line.split(',').map(v => v.trim());
     const rowObj: Record<string, string> = {};
     headers.forEach((h, idx) => {
       if (values[idx]) {
@@ -66,8 +80,6 @@ export function parseCSVPayload(csvContent: string): RawIndicator[] {
 
     const parsed = csvRowSchema.safeParse(rowObj);
     if (parsed.success) {
-      const typeStr = parsed.data.type as keyof typeof IndicatorType;
-      const type = IndicatorType[typeStr] || IndicatorType.DOMAIN; 
       results.push({
         value: parsed.data.value,
         type: VALID_INDICATOR_TYPES.has(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
