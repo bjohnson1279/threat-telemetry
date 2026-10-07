@@ -28,5 +28,10 @@ model ThreatIndicator {
   @@index([severity])
   @@index([indicatorValue])
 
+  // ⚡ Bolt: [performance improvement]
+  // Add database index for createdAt since it is the default sort field for the paginated list endpoint.
+  // Expected impact: Eliminates sequential table scans and in-memory sorting, reducing query latency from O(N) to O(log N).
+  @@index([createdAt(sort: Desc)])
+
   @@map("threat_indicators")
 }

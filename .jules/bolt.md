@@ -83,3 +83,7 @@
 ## 2026-10-06 - Native indexOf for String Parsing
 **Learning:** Iterating characters in JS is slower than utilizing V8's native C++ indexOf method.
 **Action:** Use while loops with indexOf for counting characters in large payloads.
+
+## 2024-10-07 - Prisma Database Index on Default Sort Field
+**Learning:** Missing a database index on the default `sortBy` field (`createdAt`) causes the list API endpoint to perform a sequential table scan and in-memory sorting, creating a massive O(N) performance bottleneck as data grows.
+**Action:** Always add a native database index (`@@index([createdAt(sort: Desc)])`) in Prisma schema for fields used as default sorting parameters in paginated endpoints.
