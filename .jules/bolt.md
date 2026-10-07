@@ -79,3 +79,7 @@
 ## 2026-10-04 - React component useMemo for static arrays
 **Learning:** Using `useMemo` with an empty dependency array `[]` to cache static arrays or Enum mappings inside a component adds unnecessary React lifecycle overhead with no measurable benefit.
 **Action:** Hoist static constants completely outside the functional component instead of using `useMemo`.
+
+## 2026-10-06 - Native indexOf for String Parsing
+**Learning:** Iterating characters in JS is slower than utilizing V8's native C++ indexOf method.
+**Action:** Use while loops with indexOf for counting characters in large payloads.
