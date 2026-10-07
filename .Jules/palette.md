@@ -90,3 +90,6 @@
 ## 2026-10-05 - Add tooltips and aria-busy to interactive elements
 **Learning:** Icon-only buttons (like clear search or close drawer) provide `aria-label`s for screen readers, but mouse users lack visual context without a `title` attribute. Disabled buttons (like pagination) can be confusing without an explanation. Async actions need `aria-busy` so screen readers announce the processing state.
 **Action:** Always add `title` attributes that mirror `aria-label`s on icon-only buttons. Add explanatory `title` attributes to disabled buttons to explain the state (e.g., 'First page reached'). Add `aria-busy={true}` to buttons executing async operations.
+## 2026-10-07 - Prevent Focus Loss on Unmount
+**Learning:** When conditionally rendering global 'Clear Filters' buttons, they unmount upon activation. This causes sudden focus loss for keyboard users, resetting focus to the document body.
+**Action:** Always shift focus to a logical adjacent element (like the search input) using a React ref before clearing the state that causes the component to unmount.
