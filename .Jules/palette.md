@@ -87,3 +87,6 @@
 ## 2026-10-04 - [Add Explicit Inline Error Feedback for Async Drawer Actions]
 **Learning:** Silent failures in isolated overlay components (like drawers or modals) lead to severe user confusion since global error handlers (like toast notifications) may be visually disconnected or absent. We need explicit, localized error boundaries for complex async actions (like LLM enrichment).
 **Action:** Always implement semantic, inline error states with `role="alert"` immediately adjacent to the action button inside the drawer, clearing the state on successful retry or component unmount.
+## 2026-10-05 - Add tooltips and aria-busy to interactive elements
+**Learning:** Icon-only buttons (like clear search or close drawer) provide `aria-label`s for screen readers, but mouse users lack visual context without a `title` attribute. Disabled buttons (like pagination) can be confusing without an explanation. Async actions need `aria-busy` so screen readers announce the processing state.
+**Action:** Always add `title` attributes that mirror `aria-label`s on icon-only buttons. Add explanatory `title` attributes to disabled buttons to explain the state (e.g., 'First page reached'). Add `aria-busy={true}` to buttons executing async operations.
