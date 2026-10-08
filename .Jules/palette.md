@@ -90,3 +90,7 @@
 ## 2026-10-05 - Add tooltips and aria-busy to interactive elements
 **Learning:** Icon-only buttons (like clear search or close drawer) provide `aria-label`s for screen readers, but mouse users lack visual context without a `title` attribute. Disabled buttons (like pagination) can be confusing without an explanation. Async actions need `aria-busy` so screen readers announce the processing state.
 **Action:** Always add `title` attributes that mirror `aria-label`s on icon-only buttons. Add explanatory `title` attributes to disabled buttons to explain the state (e.g., 'First page reached'). Add `aria-busy={true}` to buttons executing async operations.
+
+## 2024-10-08 - Added Table Caption
+**Learning:** Screen readers need explicit context for data tables. Complex tables without a caption can be difficult to understand.
+**Action:** Always add a visually hidden caption (e.g., `<caption className="sr-only">...</caption>`) to data tables.

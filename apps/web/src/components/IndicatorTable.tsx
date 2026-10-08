@@ -90,6 +90,7 @@ export const IndicatorTable: React.FC = () => {
       <div className="flex-1 bg-threat-surface border border-threat-border rounded-lg overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
+            <caption className="sr-only">Threat indicators showing details like type, severity, and confidence</caption>
             <thead>
               <tr className="bg-threat-bg/80 border-b border-threat-border text-threat-muted text-sm uppercase tracking-wider">
                 <th className="p-4 font-medium">Indicator</th>
