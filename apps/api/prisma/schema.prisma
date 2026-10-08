@@ -27,6 +27,10 @@ model ThreatIndicator {
   @@index([indicatorType, confidenceScore])
   @@index([severity])
   @@index([indicatorValue])
+  // ⚡ Bolt: [performance improvement]
+  // Index on createdAt to optimize default sorting in API endpoints.
+  // Impact: Eliminates sequential scans and in-memory sorts.
+  @@index([createdAt(sort: Desc)])
 
   @@map("threat_indicators")
 }

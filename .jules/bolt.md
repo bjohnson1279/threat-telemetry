@@ -83,3 +83,6 @@
 ## 2026-10-06 - Native indexOf for String Parsing
 **Learning:** Iterating characters in JS is slower than utilizing V8's native C++ indexOf method.
 **Action:** Use while loops with indexOf for counting characters in large payloads.
+## 2026-10-08 - Prisma createdAt Index
+**Learning:** Adding an index to `createdAt` descending resolves O(N) sequential scan performance bottlenecks for default API queries.
+**Action:** Always verify frequently sorted fields have an index in Prisma schema using `@@index([field(sort: Desc)])`.
