@@ -98,3 +98,7 @@
 **Prevention:** Do not use `string.split('
 ')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
 ## 2026-10-06 - [CRITICAL] Memory DoS via String Splitting in CSV Parsing\n**Vulnerability:** The `parseCSVPayload` function used `csvContent.split('\n')` to split large payloads, allocating a massive array in memory which can cause an Out-Of-Memory (OOM) crash.\n**Learning:** Unbounded string splitting is dangerous and memory-inefficient, opening up vectors for Denial of Service (DoS) attacks.\n**Prevention:** Replace string splitting on massive unbounded inputs with an iterative parsing approach (e.g., streaming or using `indexOf('\n')` combined with `substring`) to process data sequentially.
+## 2026-10-08 - [Fix sensitive data leakage in logs]
+**Vulnerability:** The `sanitizeForLog` function only checked for exact lowercase matches of 'password', 'token', and 'secret', failing to redact case-variations or API keys.
+**Learning:** Implementing redaction utilities for logs (e.g., `sanitizeForLog`), ensure key matching is case-insensitive and covers standard credential variations (including `api_key`, `apikey`) to prevent sensitive data leakage.
+**Prevention:** Use a common case comparison (e.g. `toLowerCase()`) to avoid unhandled case variations and also include variations of the sensitive fields in the search.

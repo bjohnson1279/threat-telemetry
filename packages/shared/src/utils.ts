@@ -39,7 +39,8 @@ export async function sleep(ms: number): Promise<void> {
 
 export function sanitizeForLog(obj: unknown): string {
   return JSON.stringify(obj, (key, value) => {
-    if (key === 'password' || key === 'token' || key === 'secret') return '[REDACTED]';
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === 'password' || lowerKey === 'token' || lowerKey === 'secret' || lowerKey.includes('api_key') || lowerKey.includes('apikey')) return '[REDACTED]';
     return value;
   });
 }
