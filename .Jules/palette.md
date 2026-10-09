@@ -111,3 +111,6 @@
 - **Strictly Append-Only Journaling**: When adding learnings to `.jules/*.md`, append strictly at the end of the file. Do not rewrite, deduplicate, or remove lines beginning with `## YYYY-MM-DD`.
 - **Surgical Scope Quarantine**: Modify only the files directly involved in the issue and their corresponding test fixtures. Do not delete, rename, or perform drive-by cleanups of unrelated root-level scripts or legacy files.
 - **Coupled Test Fixture Awareness for Security Invariants**: When changing fail-open fallback behavior (such as hardening decryption to fail closed), always update upstream test mocks that rely on plaintext credentials or mock values.
+## 2026-10-09 - Screen Reader Announcements for API Failures
+**Learning:** Screen reader users are not notified when a globally placed error state (like an API failure message in a stats dashboard) appears silently in the DOM, leading to a confusing and broken user experience.
+**Action:** Always add `role="alert"` and `aria-live="assertive"` to error state containers to ensure screen readers proactively announce the failure to users upon rendering.

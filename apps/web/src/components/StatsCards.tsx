@@ -6,7 +6,7 @@ export const StatsCards: React.FC = () => {
 
   if (error && !stats) {
     return (
-      <div className="mb-6 p-6 bg-threat-surface border border-threat-border rounded-lg flex flex-col items-center justify-center space-y-3">
+      <div role="alert" aria-live="assertive" className="mb-6 p-6 bg-threat-surface border border-threat-border rounded-lg flex flex-col items-center justify-center space-y-3">
         <div className="flex items-center space-x-2 text-threat-critical">
           <span aria-hidden="true">⚠️</span>
           <p className="font-medium">Failed to load statistics</p>
