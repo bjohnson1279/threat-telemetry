@@ -72,12 +72,13 @@ describe('Utils', () => {
   });
 
   describe('sanitizeForLog', () => {
-    it('redacts sensitive keys', () => {
-      const obj = { username: 'user', password: 'password123', other: 'data' };
+    it('redacts sensitive keys case-insensitively and includes api keys', () => {
+      const obj = { username: 'user', PassWord: 'password123', API_KEY: 'sk-12345', other: 'data' };
       const sanitized = sanitizeForLog(obj);
       expect(sanitized).toContain('[REDACTED]');
       expect(sanitized).toContain('user');
       expect(sanitized).not.toContain('password123');
+      expect(sanitized).not.toContain('sk-12345');
     });
   });
 });
