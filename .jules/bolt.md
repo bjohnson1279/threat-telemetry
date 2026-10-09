@@ -1,4 +1,6 @@
-## 2026-09-06 - Prisma Sequential Query Optimization\n**Learning:** Running sequential independent database queries with Prisma causes unnecessary N+1 roundtrip delays over the network.\n**Action:** Use `Promise.all()` to parallelize independent database queries, especially in statistical summary or list endpoints with counts.
+## 2026-09-06 - Prisma Sequential Query Optimization
+**Learning:** Running sequential independent database queries with Prisma causes unnecessary N+1 roundtrip delays over the network.
+**Action:** Use `Promise.all()` to parallelize independent database queries, especially in statistical summary or list endpoints with counts.
 
 ## 2026-09-12 - Prisma batch insertion optimization
 **Learning:** Using `prisma.$transaction` with an array of `prisma.create` queries performs sequential inserts leading to an N+1 performance bottleneck during ingestion.
@@ -98,3 +100,7 @@
 - **Strictly Append-Only Journaling**: When adding learnings to `.jules/*.md`, append strictly at the end of the file. Do not rewrite, deduplicate, or remove lines beginning with `## YYYY-MM-DD`.
 - **Surgical Scope Quarantine**: Modify only the files directly involved in the issue and their corresponding test fixtures. Do not delete, rename, or perform drive-by cleanups of unrelated root-level scripts or legacy files.
 - **Coupled Test Fixture Awareness for Security Invariants**: When changing fail-open fallback behavior (such as hardening decryption to fail closed), always update upstream test mocks that rely on plaintext credentials or mock values.
+
+- **Strict Lowercase Directory Casing**: Always write learning notes to lowercase `.jules/<bot>.md`. Never create, commit, or reference uppercase `.Jules/`.
+
+- **Clean Markdown Formatting**: Always append journal entries using actual newline characters, never literal string escape sequences `\n`.
