@@ -13,7 +13,9 @@
 ## 2026-09-11 - Add clear button to search input
 **Learning:** Search inputs often contain complex queries, but users had to manually backspace or select all text to clear them, causing friction. A small interactive clear button makes filtering noticeably faster.
 **Action:** Consistently add a clear button `(&times;)` with a proper `aria-label="Clear search"` to all non-trivial search inputs in the design system, ensuring it's conditionally rendered only when the input has a value.
+
 ## 2026-09-12 - [UX/Accessibility Improvements]\n**Learning:** Implementing semantic HTML attributes like `aria-busy="true"` and `role="progressbar"` with `aria-value*` drastically improves screen reader compatibility without needing any custom JavaScript logic or CSS changes.\n**Action:** Use existing ARIA standards for structural semantic improvements directly on layout placeholders/loading-states and visual indicators.
+
 ## 2026-09-15 - [Confidence Bar Accessibility Fix]
 **Learning:** When building visual progress bars or gauges with standard DOM elements, using a semantically grouped container with `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, and `aria-valuemax` while hiding purely visual inner DOM elements from screen readers using `aria-hidden="true"` provides a much cleaner experience for assistive technologies.
 **Action:** Apply this pattern consistently across all custom progress/gauge components instead of arbitrarily scattering ARIA attributes.
@@ -21,9 +23,11 @@
 ## 2026-09-16 - Keyboard shortcut visual hints
 **Learning:** When adding keyboard shortcuts (like '/' to focus search), users often discover them by accident or not at all unless visually hinted. Adding a non-intrusive `<kbd>` hint directly in the input that disappears on typing provides excellent, non-blocking discoverability.
 **Action:** When implementing global keyboard shortcuts for primary inputs, add a small, styled `<kbd>` element inside the input's visual bounds, hide it when the input has value to not interfere with text, and ensure the `aria-label` includes the shortcut hint.
+
 ## 2026-09-17 - [Add copy button to indicator drawer]
 **Learning:** Analysts frequently need to copy IOC values (like IPs or hashes) to paste into external tools, so providing a one-click copy button next to the indicator value improves the workflow significantly. Adding immediate visual feedback (like swapping icons briefly) enhances the perceived reliability of this action.
 **Action:** Always add a copy-to-clipboard button to key values in detail views or drawers, ensuring they have appropriate aria-labels and keyboard focus styling.
+
 ## 2026-09-18 - Inline Actions for Repetitive Workflows
 **Learning:** Analysts frequently need to extract/copy indicator values (IPs, hashes) directly from lists. Opening a drawer or detail view just to copy a value adds unnecessary friction. Hiding inline actions (like a copy button) until row hover or focus provides the utility without cluttering the UI.
 **Action:** Add inline copy buttons (with `opacity-0 group-hover:opacity-100 focus-visible:opacity-100`) to indicator values in list views to streamline analyst workflows.
@@ -39,9 +43,30 @@
 ## 2026-09-27 - Prevent focus loss on conditionally rendered elements
 **Learning:** When a conditionally rendered interactive element (like a 'Clear search' button) unmounts upon activation, it causes sudden focus loss for keyboard users.
 **Action:** Programmatically restore focus to a logical next element (e.g., the input field) using a React ref.
+
 ## 2026-09-29 - Dynamic aria-labels for ephemeral states
 **Learning:** When using state-based visual indicators (like swapping a 📋 icon to a ✅ icon for 'copied'), screen readers might miss the ephemeral feedback if the `aria-label` remains static. Also, trapping/shifting focus to dialogs/drawers correctly helps accessibility immensely.
 **Action:** Dynamically update `aria-label` and `title` based on ephemeral states, and ensure proper focus trapping/restoration when mounting/unmounting modals.
+
+## 2026-09-29 - Scope Verification for Async Loading Attributes
+**Learning:** Blindly injecting `disabled={loading}` or `aria-busy={loading}` into JSX/TSX buttons causes fatal TypeScript compilation errors (`TS2304: Cannot find name 'loading'`) when `loading` is not declared in component props, state hooks (`useState`), or mutation results. Furthermore, using temporary patch scripts (`fix_*.cjs`) to manipulate source code pollutes the git index.
+**Action:** Before referencing any state identifier (such as `loading`, `isSubmitting`, `isPending`) in `disabled` or `aria-busy`, inspect the component scope. If no loading state is tracked, define it using `useState(false)` or check existing query/mutation hooks. Never bind undeclared variables. Always run `tsc --noEmit` locally and never commit temporary fix scripts.
+
+## 2026-10-02 - Explicit Error States in Data Views
+**Learning:** Silent failures in data tables create confusion. Users need explicit error messages rather than a generic 'No data' state when an API call fails.
+**Action:** Always extract the 'error' state from data hooks and render a dedicated error UI with a 'Try Again' recovery action.
+
+## 2026-10-04 - [Add Explicit Inline Error Feedback for Async Drawer Actions]
+**Learning:** Silent failures in isolated overlay components (like drawers or modals) lead to severe user confusion since global error handlers (like toast notifications) may be visually disconnected or absent. We need explicit, localized error boundaries for complex async actions (like LLM enrichment).
+**Action:** Always implement semantic, inline error states with `role="alert"` immediately adjacent to the action button inside the drawer, clearing the state on successful retry or component unmount.
+
+## 2026-10-05 - Add tooltips and aria-busy to interactive elements
+**Learning:** Icon-only buttons (like clear search or close drawer) provide `aria-label`s for screen readers, but mouse users lack visual context without a `title` attribute. Disabled buttons (like pagination) can be confusing without an explanation. Async actions need `aria-busy` so screen readers announce the processing state.
+**Action:** Always add `title` attributes that mirror `aria-label`s on icon-only buttons. Add explanatory `title` attributes to disabled buttons to explain the state (e.g., 'First page reached'). Add `aria-busy={true}` to buttons executing async operations.
+
+## 2026-10-07 - Prevent Focus Loss on Unmount
+**Learning:** When conditionally rendering global 'Clear Filters' buttons, they unmount upon activation. This causes sudden focus loss for keyboard users, resetting focus to the document body.
+**Action:** Always shift focus to a logical adjacent element (like the search input) using a React ref before clearing the state that causes the component to unmount.
 
 ## Prevention Directives for Automated Refactoring
 - **Never Overwrite Complete Files**: Always use range-scoped replacement chunks for edits to `schema.prisma`, `index.ts`, `public/index.php`, `db/schema.rb`, or DDL SQL scripts.
@@ -64,10 +89,10 @@
 ## Assertiveness, Decisive PR Execution & Comparative Recommendations
 - **Proactive & Decisive PR Submission**: Do NOT repeatedly pause to ask permission to open a pull request (e.g., avoid "Would you like me to open a PR for this?", "Can I submit the PR?", "Should I go ahead and create the PR?"). When an optimization, fix, or feature satisfies requirements, passes local test runners/linters, and preserves architectural invariants, proceed decisively to create and submit the Pull Request with a clear, structured summary and rationale.
 - **Explicit Recommendations on Options**: When presenting multiple implementation strategies or architecture options (e.g., Option A vs. Option B), NEVER leave the choice open-ended or passive. Always make an explicit, reasoned recommendation (prefixed with `(Recommended)`) based on **overall technical effectiveness**:
-  1. *Algorithmic & Complexity Gains*: Time and space complexity impact (O(N*M) -> O(N+M), reduction of nested scans).
-  2. *Resource Overhead*: Heap allocations, memory pressure, and GC pause reduction.
-  3. *Domain & Architecture Invariants*: Strict backward compatibility, contract stability, and prevention of regression risks.
-  4. *Security & Reliability*: Input validation, cryptographic safety, and concurrency safety.
+1. *Algorithmic & Complexity Gains*: Time and space complexity impact (O(N*M) -> O(N+M), reduction of nested scans).
+2. *Resource Overhead*: Heap allocations, memory pressure, and GC pause reduction.
+3. *Domain & Architecture Invariants*: Strict backward compatibility, contract stability, and prevention of regression risks.
+4. *Security & Reliability*: Input validation, cryptographic safety, and concurrency safety.
 - **Lead with Recommended Path**: State clearly why the recommended solution delivers the highest net value and immediately execute or propose it as the primary course of action rather than asking open-ended questions.
 
 ## Scope Verification, Minimal Churn & CI Protection Directives
@@ -76,20 +101,6 @@
 - **Zero Scratch File Commits**: Never stage or commit ad-hoc verification, patch, or debug scripts (`test.cjs`, `fix_*.cjs`, `fix_*.php`, `patch_*.py`, `patch_*.sh`, `scratch_*`). Execute checks via the project's native test commands (`npm test`, `pytest`, `phpunit`, etc.) and delete temporary scripts before creating git commits.
 - **Never Weaken CI Workflows**: Do not modify `.github/workflows/**` to bypass failures (e.g. adding `|| true`, setting `continue-on-error: true`, or commenting out assertions). Always resolve the defect in the source code or test fixture.
 - **Explicit Parameter & Variable Types**: In TypeScript files, avoid implicit `any` by always providing explicit types on functions, parameters, and arrow callbacks (e.g. `(id: string) => ...`). Verify zero type errors with `tsc --noEmit` before committing.
-
-## 2026-09-29 - Scope Verification for Async Loading Attributes
-**Learning:** Blindly injecting `disabled={loading}` or `aria-busy={loading}` into JSX/TSX buttons causes fatal TypeScript compilation errors (`TS2304: Cannot find name 'loading'`) when `loading` is not declared in component props, state hooks (`useState`), or mutation results. Furthermore, using temporary patch scripts (`fix_*.cjs`) to manipulate source code pollutes the git index.
-**Action:** Before referencing any state identifier (such as `loading`, `isSubmitting`, `isPending`) in `disabled` or `aria-busy`, inspect the component scope. If no loading state is tracked, define it using `useState(false)` or check existing query/mutation hooks. Never bind undeclared variables. Always run `tsc --noEmit` locally and never commit temporary fix scripts.
-
-## 2026-10-02 - Explicit Error States in Data Views
-**Learning:** Silent failures in data tables create confusion. Users need explicit error messages rather than a generic 'No data' state when an API call fails.
-**Action:** Always extract the 'error' state from data hooks and render a dedicated error UI with a 'Try Again' recovery action.
-## 2026-10-04 - [Add Explicit Inline Error Feedback for Async Drawer Actions]
-**Learning:** Silent failures in isolated overlay components (like drawers or modals) lead to severe user confusion since global error handlers (like toast notifications) may be visually disconnected or absent. We need explicit, localized error boundaries for complex async actions (like LLM enrichment).
-**Action:** Always implement semantic, inline error states with `role="alert"` immediately adjacent to the action button inside the drawer, clearing the state on successful retry or component unmount.
-## 2026-10-05 - Add tooltips and aria-busy to interactive elements
-**Learning:** Icon-only buttons (like clear search or close drawer) provide `aria-label`s for screen readers, but mouse users lack visual context without a `title` attribute. Disabled buttons (like pagination) can be confusing without an explanation. Async actions need `aria-busy` so screen readers announce the processing state.
-**Action:** Always add `title` attributes that mirror `aria-label`s on icon-only buttons. Add explanatory `title` attributes to disabled buttons to explain the state (e.g., 'First page reached'). Add `aria-busy={true}` to buttons executing async operations.
 
 ## Additive Documentation & Scratch Cleanliness Directives
 - **Strictly Additive Journal Updates**: When updating `.jules/*.md`, strictly append new dated entries (`## YYYY-MM-DD - Title`). NEVER delete, truncate, or overwrite historical learnings or previous entries.

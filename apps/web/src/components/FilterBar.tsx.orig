@@ -95,11 +95,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
             }}
             className="absolute right-2 top-2.5 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded-full leading-none flex items-center justify-center w-5 h-5 text-lg"
           >
-          <span aria-hidden="true">&times;</span>
+            &times;
           </button>
         )}
       </div>
-      
+
       <select
         aria-label="Filter by indicator type"
         className="bg-threat-bg border border-threat-border rounded px-4 py-2 text-threat-text cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
@@ -133,20 +133,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
         />
         <span className="text-sm w-7 text-right tabular-nums" aria-hidden="true">{localMinConfidence}%</span>
       </div>
-
-      {(filters.search || filters.indicatorType || filters.severity || (filters.minConfidence && filters.minConfidence > 0)) ? (
-        <button
-          type="button"
-          onClick={() => {
-            setFilters({ page: 1, pageSize: filters.pageSize });
-            searchInputRef.current?.focus();
-          }}
-          className="px-4 py-2 text-sm text-threat-muted hover:text-threat-text hover:bg-threat-bg border border-transparent hover:border-threat-border rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
-          aria-label="Clear all active filters"
-        >
-          Clear Filters
-        </button>
-      ) : null}
     </div>
   );
 };
