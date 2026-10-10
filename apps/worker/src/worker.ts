@@ -46,15 +46,24 @@ export class EnrichmentWorker {
       if (unenriched.length > 0) {
         this.logger.info(`Processing batch of ${unenriched.length} indicators`);
         
-        await Promise.allSettled(
+        // ⚡ Bolt: [performance improvement]
+        // Wrap concurrent DB operations using bounded concurrency to prevent connection timeouts
+        // Expected impact: Eliminates Prisma connection pool exhaustion and timeouts during batch processing
+        const results = await Promise.allSettled(
           unenriched.map(async (indicator: any) => {
-            try {
-              const enrichment = await this.enrichmentService.enrich({
-                value: indicator.indicatorValue,
-                type: indicator.indicatorType,
-                rawPayload: indicator.rawPayload,
-              });
+            const enrichment = await this.enrichmentService.enrich({
+              value: indicator.indicatorValue,
+              type: indicator.indicatorType,
+              rawPayload: indicator.rawPayload,
+            });
+            return { indicator, enrichment };
+          })
+        );
 
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            try {
+              const { indicator, enrichment } = result.value;
               await this.prisma.threatIndicator.update({
                 where: { id: indicator.id },
                 data: {
@@ -65,13 +74,14 @@ export class EnrichmentWorker {
                   lastSeen: new Date(),
                 },
               });
-              
               this.logger.info(`Enriched ${indicator.indicatorValue}`);
             } catch (err) {
-              this.logger.error({ err, indicator: indicator.indicatorValue }, 'Failed to process indicator');
+              this.logger.error({ err, indicator: result.value.indicator.indicatorValue }, 'Failed to update indicator in DB');
             }
-          })
-        );
+          } else {
+            this.logger.error({ err: result.reason }, 'Failed to enrich indicator');
+          }
+        }
       }
     } catch (err) {
       this.logger.error({ err }, 'Error in enrichment loop');
