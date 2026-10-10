@@ -25,19 +25,34 @@ export async function fetchIndicators(filters: ThreatIndicatorFilter): Promise<P
   if (filters.sortBy) params.append('sortBy', filters.sortBy);
   if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-  const res = await fetch(`${API_BASE}/indicators?${params.toString()}`);
+  const apiKey = import.meta.env.VITE_INTERNAL_API_KEY || '';
+  const res = await fetch(`${API_BASE}/indicators?${params.toString()}`, {
+    headers: {
+      'x-api-key': apiKey,
+    },
+  });
   if (!res.ok) throw new Error('Failed to fetch indicators');
   return res.json();
 }
 
 export async function fetchIndicator(id: string): Promise<ThreatIndicator> {
-  const res = await fetch(`${API_BASE}/indicators/${id}`);
+  const apiKey = import.meta.env.VITE_INTERNAL_API_KEY || '';
+  const res = await fetch(`${API_BASE}/indicators/${id}`, {
+    headers: {
+      'x-api-key': apiKey,
+    },
+  });
   if (!res.ok) throw new Error('Failed to fetch indicator');
   return res.json();
 }
 
 export async function fetchStats(): Promise<StatsResponse> {
-  const res = await fetch(`${API_BASE}/indicators/stats/summary`);
+  const apiKey = import.meta.env.VITE_INTERNAL_API_KEY || '';
+  const res = await fetch(`${API_BASE}/indicators/stats/summary`, {
+    headers: {
+      'x-api-key': apiKey,
+    },
+  });
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
 }
