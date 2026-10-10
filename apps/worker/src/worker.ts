@@ -46,7 +46,10 @@ export class EnrichmentWorker {
       if (unenriched.length > 0) {
         this.logger.info(`Processing batch of ${unenriched.length} indicators`);
         
-        await Promise.allSettled(
+        // ⚡ Bolt: [performance improvement]
+        // Run external API calls concurrently, collect results, then perform DB updates sequentially.
+        // Expected impact: Prevents database connection pool exhaustion (Prisma timeouts).
+        const enrichmentResults = await Promise.all(
           unenriched.map(async (indicator: any) => {
             try {
               const enrichment = await this.enrichmentService.enrich({
@@ -54,24 +57,34 @@ export class EnrichmentWorker {
                 type: indicator.indicatorType,
                 rawPayload: indicator.rawPayload,
               });
-
-              await this.prisma.threatIndicator.update({
-                where: { id: indicator.id },
-                data: {
-                  enrichmentSummary: enrichment.analystBrief,
-                  severity: enrichment.severity,
-                  confidenceScore: enrichment.confidenceScore,
-                  mitreTechniques: enrichment.mitreTechniques,
-                  lastSeen: new Date(),
-                },
-              });
-              
-              this.logger.info(`Enriched ${indicator.indicatorValue}`);
+              return { success: true, indicator, enrichment };
             } catch (err) {
-              this.logger.error({ err, indicator: indicator.indicatorValue }, 'Failed to process indicator');
+              return { success: false, indicator, err };
             }
           })
         );
+
+        for (const result of enrichmentResults) {
+          if (result.success && result.enrichment) {
+            try {
+              await this.prisma.threatIndicator.update({
+                where: { id: result.indicator.id },
+                data: {
+                  enrichmentSummary: result.enrichment.analystBrief,
+                  severity: result.enrichment.severity,
+                  confidenceScore: result.enrichment.confidenceScore,
+                  mitreTechniques: result.enrichment.mitreTechniques,
+                  lastSeen: new Date(),
+                },
+              });
+              this.logger.info(`Enriched ${result.indicator.indicatorValue}`);
+            } catch (err) {
+              this.logger.error({ err, indicator: result.indicator.indicatorValue }, 'Failed to process indicator');
+            }
+          } else {
+            this.logger.error({ err: result.err, indicator: result.indicator.indicatorValue }, 'Failed to process indicator');
+          }
+        }
       }
     } catch (err) {
       this.logger.error({ err }, 'Error in enrichment loop');

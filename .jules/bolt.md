@@ -104,3 +104,7 @@
 - **Strict Lowercase Directory Casing**: Always write learning notes to lowercase `.jules/<bot>.md`. Never create, commit, or reference uppercase `.Jules/`.
 
 - **Clean Markdown Formatting**: Always append journal entries using actual newline characters, never literal string escape sequences `\n`.
+
+## 2026-10-10 - Concurrent API calls with sequential database updates
+**Learning:** When processing batches of items requiring both external API calls and database updates, avoid separating them into a concurrent API phase followed by a sequential DB phase if it forces waiting for the slowest API call before starting any database writes. Instead, keep the DB update chained directly after its respective API call (using Promise.all or similar) to allow interleaving, but strictly limit overall concurrency (e.g., using p-limit or chunked batches) to prevent database connection pool exhaustion.
+**Action:** Use Promise.all with embedded DB updates (handling errors via try/catch inside the map function) combined with strict batch size limits rather than splitting operations across separate loops.
