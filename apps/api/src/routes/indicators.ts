@@ -111,6 +111,7 @@ router.post(
 router.get(
   '/',
   validate(threatIndicatorFilterSchema, 'query'),
+  requireAuth,
   async (req: Request, res: Response, next) => {
     try {
       const {
@@ -178,7 +179,7 @@ let statsCache: { data: any; timestamp: number } | null = null;
 const STATS_CACHE_TTL_MS = 10000;
 
 // Endpoint: GET /api/v1/indicators/stats/summary
-router.get('/stats/summary', async (req: Request, res: Response, next) => {
+router.get('/stats/summary', requireAuth, async (req: Request, res: Response, next) => {
   try {
     // ⚡ Bolt: [performance improvement]
     // Cache the results of the expensive database aggregations to prevent database strain.
@@ -223,7 +224,7 @@ router.get('/stats/summary', async (req: Request, res: Response, next) => {
 });
 
 // Endpoint: GET /api/v1/indicators/:id
-router.get('/:id', validate(idParamSchema, 'params'), async (req: Request, res: Response, next) => {
+router.get('/:id', validate(idParamSchema, 'params'), requireAuth, async (req: Request, res: Response, next) => {
   try {
     const id = req.params.id as string;
     const indicator = await prisma.threatIndicator.findUnique({

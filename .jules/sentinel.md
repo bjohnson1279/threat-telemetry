@@ -58,11 +58,9 @@
 **Action:** Never modify CI workflow definitions to bypass test failures; resolve the underlying issue in source code or test fixtures. Always provide explicit types on newly introduced parameters and helper functions. Ensure zero scratch scripts (`fix_*.php`, `test_*.js`) are committed.
 
 ## 2026-10-03 - [CRITICAL] Memory DoS via String Splitting for Validation
-**Vulnerability:** When validating the size of massive payloads (like raw CSV strings) before processing, using `string.split('
-')` to count lines allocates a massive array in memory. For huge payloads, this can trigger an Out-Of-Memory (OOM) crash, creating a DoS vulnerability.
+**Vulnerability:** When validating the size of massive payloads (like raw CSV strings) before processing, using `string.split('\n')` to count lines allocates a massive array in memory. For huge payloads, this can trigger an Out-Of-Memory (OOM) crash, creating a DoS vulnerability.
 **Learning:** String splitting is not memory-safe for unbounded or extremely large inputs.
-**Prevention:** Do not use `string.split('
-')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
+**Prevention:** Do not use `string.split('\n')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
 
 ## 2026-10-04 - [CRITICAL] Memory DoS via String Splitting for Validation
 **Vulnerability:** When validating the size of massive payloads (like raw CSV strings) before processing, using `string.split('
@@ -82,6 +80,13 @@
 **Vulnerability:** The `sanitizeForLog` function only checked for exact lowercase matches of 'password', 'token', and 'secret', failing to redact case-variations or API keys.
 **Learning:** Implementing redaction utilities for logs (e.g., `sanitizeForLog`), ensure key matching is case-insensitive and covers standard credential variations (including `api_key`, `apikey`) to prevent sensitive data leakage.
 **Prevention:** Use a common case comparison (e.g. `toLowerCase()`) to avoid unhandled case variations and also include variations of the sensitive fields in the search.
+
+## 2026-10-06 - [CRITICAL] Memory DoS via String Splitting in CSV Parsing\n**Vulnerability:** The `parseCSVPayload` function used `csvContent.split('\n')` to split large payloads, allocating a massive array in memory which can cause an Out-Of-Memory (OOM) crash.\n**Learning:** Unbounded string splitting is dangerous and memory-inefficient, opening up vectors for Denial of Service (DoS) attacks.\n**Prevention:** Replace string splitting on massive unbounded inputs with an iterative parsing approach (e.g., streaming or using `indexOf('\n')` combined with `substring`) to process data sequentially.
+
+## 2024-10-10 - [CRITICAL] Fix Missing Authentication on Sensitive Endpoints
+**Vulnerability:** The GET endpoints for threat indicators (`/`, `/stats/summary`, `/:id`) lacked authentication, exposing sensitive threat telemetry data.
+**Learning:** Even internal API endpoints that only retrieve data (GET requests) must enforce authentication to prevent unauthorized data exfiltration.
+**Prevention:** Ensure all sensitive endpoints, including read-only ones, are protected by authentication middleware (e.g., `requireAuth`).
 
 ## Prevention Directives for Automated Refactoring
 - **Never Overwrite Complete Files**: Always use range-scoped replacement chunks for edits to `schema.prisma`, `index.ts`, `public/index.php`, `db/schema.rb`, or DDL SQL scripts.
@@ -126,7 +131,5 @@
 - **Strictly Append-Only Journaling**: When adding learnings to `.jules/*.md`, append strictly at the end of the file. Do not rewrite, deduplicate, or remove lines beginning with `## YYYY-MM-DD`.
 - **Surgical Scope Quarantine**: Modify only the files directly involved in the issue and their corresponding test fixtures. Do not delete, rename, or perform drive-by cleanups of unrelated root-level scripts or legacy files.
 - **Coupled Test Fixture Awareness for Security Invariants**: When changing fail-open fallback behavior (such as hardening decryption to fail closed), always update upstream test mocks that rely on plaintext credentials or mock values.
-
 - **Strict Lowercase Directory Casing**: Always write learning notes to lowercase `.jules/<bot>.md`. Never create, commit, or reference uppercase `.Jules/`.
-
 - **Clean Markdown Formatting**: Always append journal entries using actual newline characters, never literal string escape sequences `\n`.

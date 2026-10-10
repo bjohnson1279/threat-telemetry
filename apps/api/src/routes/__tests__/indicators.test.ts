@@ -130,7 +130,7 @@ describe('Indicators Routes', () => {
         indicatorType: 'IP',
         severity: 'HIGH',
       },
-      headers: {},
+      headers: { 'x-api-key': 'test-internal-key' },
     };
     const res = mockResponse();
 
@@ -156,7 +156,7 @@ describe('Indicators Routes', () => {
   });
 
   it('should test detail endpoint 404', async () => {
-    const req = { params: { id: '00000000-0000-0000-0000-000000000000' }, headers: {} };
+    const req = { params: { id: '00000000-0000-0000-0000-000000000000' }, headers: { 'x-api-key': 'test-internal-key' } };
     const res = mockResponse();
 
     (prisma.threatIndicator.findUnique as any).mockResolvedValue(null);
@@ -168,7 +168,7 @@ describe('Indicators Routes', () => {
   });
 
   it('should return validation error for invalid uuid on detail endpoint', async () => {
-    const req = { params: { id: 'non-existent' }, headers: {} };
+    const req = { params: { id: 'non-existent' }, headers: { 'x-api-key': 'test-internal-key' } };
     const res = mockResponse();
 
     await executeRoute('get', '/:id', req, res, mockNext);
