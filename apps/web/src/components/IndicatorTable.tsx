@@ -105,7 +105,7 @@ export const IndicatorTable: React.FC = () => {
             <tbody className="divide-y divide-threat-border/50 text-sm">
               {error ? (
                 <tr>
-                  <td colSpan={7} className="p-12 text-center text-threat-muted">
+                  <td colSpan={7} className="p-12 text-center text-threat-muted" role="alert" aria-live="assertive">
                     <div className="text-4xl mb-4 opacity-50" aria-hidden="true">⚠️</div>
                     <p className="mb-2 text-threat-critical font-medium">Failed to load indicators</p>
                     <p className="mb-4 text-sm">{error}</p>
