@@ -97,3 +97,9 @@
 **Learning:** String splitting is not memory-safe for unbounded or extremely large inputs.
 **Prevention:** Do not use `string.split('
 ')` to count lines for DoS mitigation. Use HTTP middleware (like `body-parser` size limits) or memory-efficient iterative counting.
+
+## 2026-10-10 - [CRITICAL] Memory DoS via String Splitting in CSV Parsing
+**Vulnerability:** The `parseCSVPayload` function in shared schemas used `string.split('
+')` on the entire raw payload string before processing it. This allocates a massive string array in memory which can cause an Out-Of-Memory (OOM) crash, leading to a DoS.
+**Learning:** Even if the router limits the payload size and total line count, splitting a multi-megabyte string into a massive array can still cause excessive memory allocation and GC pressure.
+**Prevention:** Avoid using `split()` on unbounded or large input strings. Use memory-efficient iterative string slicing or streams to process data chunk-by-chunk.

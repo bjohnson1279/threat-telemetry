@@ -50,13 +50,31 @@ export const csvRowSchema = z.object({
 const VALID_INDICATOR_TYPES = new Set<string>(Object.values(IndicatorType) as string[]);
 
 export function parseCSVPayload(csvContent: string): RawIndicator[] {
-  const lines = csvContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  if (lines.length === 0) return [];
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-  
+  if (!csvContent) return [];
+
   const results: RawIndicator[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(',').map(v => v.trim());
+  let startIndex = 0;
+  let isFirstLine = true;
+  let headers: string[] = [];
+
+  while (startIndex < csvContent.length) {
+    let endIndex = csvContent.indexOf('\n', startIndex);
+    if (endIndex === -1) {
+      endIndex = csvContent.length;
+    }
+
+    const line = csvContent.slice(startIndex, endIndex).trim();
+    startIndex = endIndex + 1;
+
+    if (line.length === 0) continue;
+
+    if (isFirstLine) {
+      headers = line.split(',').map(h => h.trim().toLowerCase());
+      isFirstLine = false;
+      continue;
+    }
+
+    const values = line.split(',').map(v => v.trim());
     const rowObj: Record<string, string> = {};
     headers.forEach((h, idx) => {
       if (values[idx]) {
@@ -76,5 +94,6 @@ export function parseCSVPayload(csvContent: string): RawIndicator[] {
       });
     }
   }
+
   return results;
 }
