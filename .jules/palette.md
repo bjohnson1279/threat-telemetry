@@ -120,3 +120,6 @@
 - **Strict Lowercase Directory Casing**: Always write learning notes to lowercase `.jules/<bot>.md`. Never create, commit, or reference uppercase `.Jules/`.
 
 - **Clean Markdown Formatting**: Always append journal entries using actual newline characters, never literal string escape sequences `\n`.
+## 2026-10-11 - Prevent focus loss on conditional unmount
+**Learning:** When a conditionally rendered interactive element (like an empty state clear button) unmounts upon activation, it causes sudden focus loss for keyboard users, resetting focus to the body.
+**Action:** Always prevent this by programmatically restoring focus to a logical next element (like the parent search input) using a React ref.
