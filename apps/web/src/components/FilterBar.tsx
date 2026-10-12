@@ -4,6 +4,7 @@ import { ThreatIndicatorFilter, IndicatorType, ThreatSeverity } from '@threat-te
 interface FilterBarProps {
   filters: ThreatIndicatorFilter;
   setFilters: React.Dispatch<React.SetStateAction<ThreatIndicatorFilter>>;
+  searchInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 // ⚡ Bolt: [performance improvement]
@@ -18,8 +19,9 @@ const threatSeverityOptions = Object.values(ThreatSeverity).map(s => (
   <option key={s} value={s}>{s}</option>
 ));
 
-export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
-  const searchInputRef = useRef<HTMLInputElement>(null);
+export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters, searchInputRef }) => {
+  const internalRef = useRef<HTMLInputElement>(null);
+  const refToUse = searchInputRef || internalRef;
   const [localSearch, setLocalSearch] = useState(filters.search || '');
   const [localMinConfidence, setLocalMinConfidence] = useState(filters.minConfidence || 0);
 
@@ -58,7 +60,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
       // Focus search input when '/' is pressed
       if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
         e.preventDefault(); // Prevent '/' from being typed in the input
-        searchInputRef.current?.focus();
+        refToUse.current?.focus();
       }
     };
 
@@ -71,7 +73,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
       <div className="flex-1 min-w-[200px] relative">
         <span className="absolute left-3 top-2.5 opacity-50" aria-hidden="true">🔍</span>
         <input
-          ref={searchInputRef}
+          ref={refToUse}
           type="text"
           aria-label="Search indicators (Press / to focus)"
           placeholder="Search indicators..."
@@ -91,7 +93,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
             title="Clear search"
             onClick={() => {
               setLocalSearch('');
-              searchInputRef.current?.focus();
+              refToUse.current?.focus();
             }}
             className="absolute right-2 top-2.5 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded-full leading-none flex items-center justify-center w-5 h-5 text-lg"
           >
@@ -139,7 +141,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => 
           type="button"
           onClick={() => {
             setFilters({ page: 1, pageSize: filters.pageSize });
-            searchInputRef.current?.focus();
+            refToUse.current?.focus();
           }}
           className="px-4 py-2 text-sm text-threat-muted hover:text-threat-text hover:bg-threat-bg border border-transparent hover:border-threat-border rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
           aria-label="Clear all active filters"
