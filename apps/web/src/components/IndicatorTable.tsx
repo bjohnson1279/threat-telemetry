@@ -8,7 +8,10 @@ import { FilterBar } from './FilterBar';
 import { Pagination } from './Pagination';
 import { IndicatorDrawer } from './IndicatorDrawer';
 
-const CopyButton: React.FC<{ value: string }> = ({ value }) => {
+// ⚡ Bolt: [performance improvement]
+// Memoize CopyButton to prevent unnecessary Virtual DOM re-renders inside IndicatorRow.
+// Expected impact: Eliminates wasteful re-renders when parent components update.
+const CopyButton: React.FC<{ value: string }> = React.memo(({ value }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -32,7 +35,7 @@ const CopyButton: React.FC<{ value: string }> = ({ value }) => {
       <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
     </button>
   );
-};
+});
 
 // ⚡ Bolt: [performance improvement]
 // Memoize individual table rows to prevent re-rendering all rows when the parent state (like selectedIndicator or drawer state) changes.
