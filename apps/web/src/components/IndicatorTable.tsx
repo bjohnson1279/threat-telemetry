@@ -94,16 +94,19 @@ export const IndicatorTable: React.FC = () => {
             <caption className="sr-only">Threat Indicators Data Table</caption>
             <thead>
               <tr className="bg-threat-bg/80 border-b border-threat-border text-threat-muted text-sm uppercase tracking-wider">
-                <th className="p-4 font-medium">Indicator</th>
-                <th className="p-4 font-medium">Type</th>
-                <th className="p-4 font-medium">Severity</th>
-                <th className="p-4 font-medium min-w-[150px]">Confidence</th>
-                <th className="p-4 font-medium">MITRE</th>
-                <th className="p-4 font-medium">First Seen</th>
-                <th className="p-4 font-medium text-right">Actions</th>
+                <th scope="col" className="p-4 font-medium">Indicator</th>
+                <th scope="col" className="p-4 font-medium">Type</th>
+                <th scope="col" className="p-4 font-medium">Severity</th>
+                <th scope="col" className="p-4 font-medium min-w-[150px]">Confidence</th>
+                <th scope="col" className="p-4 font-medium">MITRE</th>
+                <th scope="col" className="p-4 font-medium">First Seen</th>
+                <th scope="col" className="p-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-threat-border/50 text-sm">
+            <tbody
+              className={`divide-y divide-threat-border/50 text-sm ${loading && indicators.length > 0 ? 'opacity-50 pointer-events-none transition-opacity' : ''}`}
+              aria-busy={loading}
+            >
               {error ? (
                 <tr>
                   <td colSpan={7} className="p-12 text-center text-threat-muted" role="alert" aria-live="assertive">
