@@ -111,3 +111,7 @@
 ## 2024-05-15 - Worker DB Updates Concurrency
 **Learning:** Running external API calls fully concurrently and then running DB updates sequentially (by awaiting `Promise.all` over the API calls and looping the results) introduces an unnecessary bottleneck: the DB updates cannot start until the *slowest* API call in the batch completes.
 **Action:** Chain the database update immediately inside the `map` callback mapping over the items and then use `Promise.all`. This allows interleaving of the database updates, so as soon as an API call finishes, its DB update can happen while other API calls are still waiting. Wait for the `Promise.all` to maintain the batch size limit constraint to avoid database connection pool exhaustion.
+
+## 2026-10-13 - Unsafe React.memo Custom Equality Functions
+**Learning:** Implementing a custom equality function for `React.memo` that only checks a subset of mutable object properties (e.g., checking array length instead of contents, or assuming only certain fields dictate UI updates) is highly prone to introducing stale data bugs where the UI fails to reflect actual state changes.
+**Action:** Avoid micro-optimizing React component re-renders with unsafe custom `areEqual` functions that sacrifice correctness; prioritize structural optimizations like avoiding global `loading` state toggles during background polling instead.

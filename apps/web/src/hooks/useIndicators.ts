@@ -15,9 +15,9 @@ export function useIndicators() {
     search: '',
   });
 
-  const load = useCallback(async (activeFilters: ThreatIndicatorFilter) => {
+  const load = useCallback(async (activeFilters: ThreatIndicatorFilter, isBackgroundPoll = false) => {
     try {
-      setLoading(true);
+      if (!isBackgroundPoll) setLoading(true);
       setError(null);
       const res = await fetchIndicators(activeFilters);
       setIndicators(res.data);
@@ -26,12 +26,12 @@ export function useIndicators() {
     } catch (err: any) {
       setError(err.message || 'Failed to load indicators');
     } finally {
-      setLoading(false);
+      if (!isBackgroundPoll) setLoading(false);
     }
   }, []);
 
-  const refresh = useCallback(() => {
-    load(filters);
+  const refresh = useCallback((isBackgroundPoll = false) => {
+    load(filters, isBackgroundPoll);
   }, [load, filters]);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function useIndicators() {
   }, [filters, load]);
 
   useEffect(() => {
-    const interval = setInterval(refresh, 15000);
+    const interval = setInterval(() => refresh(true), 15000);
     return () => clearInterval(interval);
   }, [refresh]);
 

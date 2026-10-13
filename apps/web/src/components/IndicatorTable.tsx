@@ -117,7 +117,7 @@ export const IndicatorTable: React.FC = () => {
                     <p className="mb-2 text-threat-critical font-medium">Failed to load indicators</p>
                     <p className="mb-4 text-sm">{error}</p>
                     <button
-                      onClick={refresh}
+                      onClick={() => refresh()}
                       className="px-4 py-2 bg-threat-surface border border-threat-border hover:bg-threat-border hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded transition-colors text-sm"
                     >
                       Try Again
