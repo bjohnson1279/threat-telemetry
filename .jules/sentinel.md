@@ -133,3 +133,7 @@
 - **Coupled Test Fixture Awareness for Security Invariants**: When changing fail-open fallback behavior (such as hardening decryption to fail closed), always update upstream test mocks that rely on plaintext credentials or mock values.
 - **Strict Lowercase Directory Casing**: Always write learning notes to lowercase `.jules/<bot>.md`. Never create, commit, or reference uppercase `.Jules/`.
 - **Clean Markdown Formatting**: Always append journal entries using actual newline characters, never literal string escape sequences `\n`.
+## 2026-10-13 - [CRITICAL] Fix Length-Based Timing Attack in API Key Validation
+**Vulnerability:** The API key validation in `apps/api/src/middleware/auth.ts` checked if the lengths of the provided and valid keys matched before comparing them, and used unhashed strings. This allowed an attacker to guess the exact length of the secret key, as requests with the wrong length would return slightly faster.
+**Learning:** Checking string lengths before using constant-time comparison methods (like `crypto.timingSafeEqual`), or feeding raw variable-length strings directly into them without hashing, defeats the purpose of constant-time comparison and exposes length-based timing attacks.
+**Prevention:** Hash both the provided secret and the expected secret using a cryptographically secure hash (like SHA-256) *before* passing them to `crypto.timingSafeEqual()`. Hashing guarantees both inputs are the same fixed length and completely masks the length of the true secret.

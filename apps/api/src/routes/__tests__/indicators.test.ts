@@ -244,4 +244,26 @@ describe('Indicators Routes', () => {
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
   });
+
+  it('should reject unauthorized request with invalid API key (length check)', async () => {
+    const req = {
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': 'invalid-key-wrong-length'
+      },
+      ip: '127.0.0.1',
+      app: { get: () => '127.0.0.1' },
+      body: {
+        indicators: [
+          { value: '192.168.1.1', type: 'IP', rawPayload: {} }
+        ]
+      }
+    };
+    const res = mockResponse();
+
+    await executeRoute('post', '/', req, res, mockNext);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
+  });
 });

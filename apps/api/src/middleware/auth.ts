@@ -18,12 +18,14 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
     return;
   }
 
-  // Sentinel: HIGH - Fix Timing Attack Vulnerability
-  // Use crypto.timingSafeEqual to prevent timing attacks on API key validation.
-  const providedKeyBuffer = Buffer.from(apiKey);
-  const validKeyBuffer = Buffer.from(validKey);
+  // Sentinel: HIGH - Fix Length-Based Timing Attack
+  // Hash both keys with SHA-256 before comparison to prevent length-based timing attacks.
+  // crypto.timingSafeEqual requires buffers of the same length, and hashing guarantees this
+  // while also completely masking the true length of the valid key from an attacker.
+  const providedHash = crypto.createHash('sha256').update(apiKey).digest();
+  const validHash = crypto.createHash('sha256').update(validKey).digest();
 
-  if (providedKeyBuffer.length !== validKeyBuffer.length || !crypto.timingSafeEqual(providedKeyBuffer, validKeyBuffer)) {
+  if (!crypto.timingSafeEqual(providedHash, validHash)) {
     logger.warn({ ip: req.ip }, 'Unauthorized access attempt');
     res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
     return;
