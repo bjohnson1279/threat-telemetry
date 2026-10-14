@@ -15,9 +15,12 @@ export function useIndicators() {
     search: '',
   });
 
-  const load = useCallback(async (activeFilters: ThreatIndicatorFilter) => {
+  // ⚡ Bolt: [performance improvement]
+  // Bypassed global loading state updates during background polling to prevent
+  // the entire IndicatorTable from artificially re-rendering and blocking user interaction.
+  const load = useCallback(async (activeFilters: ThreatIndicatorFilter, isBackground: boolean = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       setError(null);
       const res = await fetchIndicators(activeFilters);
       setIndicators(res.data);
@@ -26,12 +29,12 @@ export function useIndicators() {
     } catch (err: any) {
       setError(err.message || 'Failed to load indicators');
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, []);
 
   const refresh = useCallback(() => {
-    load(filters);
+    load(filters, true);
   }, [load, filters]);
 
   useEffect(() => {
