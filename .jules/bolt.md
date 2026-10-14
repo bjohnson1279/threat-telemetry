@@ -111,3 +111,6 @@
 ## 2024-05-15 - Worker DB Updates Concurrency
 **Learning:** Running external API calls fully concurrently and then running DB updates sequentially (by awaiting `Promise.all` over the API calls and looping the results) introduces an unnecessary bottleneck: the DB updates cannot start until the *slowest* API call in the batch completes.
 **Action:** Chain the database update immediately inside the `map` callback mapping over the items and then use `Promise.all`. This allows interleaving of the database updates, so as soon as an API call finishes, its DB update can happen while other API calls are still waiting. Wait for the `Promise.all` to maintain the batch size limit constraint to avoid database connection pool exhaustion.
+## 2024-10-25 - React background polling loading states
+**Learning:** Polling hooks that reset global `loading` state to `true` on every fetch cause artificial component re-renders (like data tables flickering or freezing via `pointer-events-none`) for users, breaking UX and wasting CPU cycles.
+**Action:** Always provide an `isBackground` flag or separate background state for polling intervals to bypass global foreground loading indicators, preserving interactivity and preventing wasteful Virtual DOM diffing.
