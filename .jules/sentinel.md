@@ -133,3 +133,8 @@
 - **Coupled Test Fixture Awareness for Security Invariants**: When changing fail-open fallback behavior (such as hardening decryption to fail closed), always update upstream test mocks that rely on plaintext credentials or mock values.
 - **Strict Lowercase Directory Casing**: Always write learning notes to lowercase `.jules/<bot>.md`. Never create, commit, or reference uppercase `.Jules/`.
 - **Clean Markdown Formatting**: Always append journal entries using actual newline characters, never literal string escape sequences `\n`.
+
+## 2024-10-14 - [CRITICAL] Fix Length-Based Timing Attack in API Key Validation
+**Vulnerability:** The API key validation checked string lengths before calling `crypto.timingSafeEqual`, creating a timing vulnerability that could leak the length of the expected API key.
+**Learning:** To prevent length-based timing attacks, always hash both the provided key and the expected key using a secure algorithm (like SHA-256) to ensure fixed-length buffers before passing them to `crypto.timingSafeEqual`.
+**Prevention:** Never check the length of a secret string before a constant-time comparison. Instead, hash the inputs to guarantee equal lengths.
