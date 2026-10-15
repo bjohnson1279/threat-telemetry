@@ -114,3 +114,7 @@
 ## 2024-10-25 - React background polling loading states
 **Learning:** Polling hooks that reset global `loading` state to `true` on every fetch cause artificial component re-renders (like data tables flickering or freezing via `pointer-events-none`) for users, breaking UX and wasting CPU cycles.
 **Action:** Always provide an `isBackground` flag or separate background state for polling intervals to bypass global foreground loading indicators, preserving interactivity and preventing wasteful Virtual DOM diffing.
+
+## 2026-10-15 - Cache Stampede Prevention
+**Learning:** When using simple TTL caching on expensive endpoints, multiple concurrent requests during the expiration window will all trigger the heavy database query simultaneously, causing a Thundering Herd.
+**Action:** Implement Promise memoization alongside the TTL cache. Store the in-flight Promise globally so concurrent requests can await the same database execution instead of spawning duplicate queries.
