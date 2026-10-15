@@ -3,7 +3,14 @@ import { IndicatorTable } from './components/IndicatorTable';
 
 function App() {
   return (
-    <div className="min-h-screen p-6 max-w-[1920px] mx-auto flex flex-col">
+    <div className="min-h-screen p-6 max-w-[1920px] mx-auto flex flex-col relative">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-threat-accent text-white rounded font-medium shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-threat-bg focus:ring-threat-accent"
+      >
+        Skip to main content
+      </a>
+
       <header className="mb-8 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="text-4xl" aria-hidden="true">🛡️</div>
@@ -20,7 +27,7 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col">
+      <main id="main-content" className="flex-1 flex flex-col focus:outline-none" tabIndex={-1}>
         <StatsCards />
         <div className="flex-1 min-h-[500px]">
           <IndicatorTable />
