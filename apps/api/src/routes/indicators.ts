@@ -176,6 +176,7 @@ router.get(
 
 // Cache for stats endpoint
 let statsCache: { data: any; timestamp: number } | null = null;
+let statsPromise: Promise<any> | null = null;
 const STATS_CACHE_TTL_MS = 10000;
 
 // Endpoint: GET /api/v1/indicators/stats/summary
@@ -191,32 +192,41 @@ router.get('/stats/summary', requireAuth, async (req: Request, res: Response, ne
     }
 
     // ⚡ Bolt: [performance improvement]
-    // Parallelize independent database queries to reduce network latency
-    // Expected impact: Significant reduction in response time for stats endpoint
-    const [totalCount, severityGroups, typeGroups, confidenceAgg] = await Promise.all([
-      prisma.threatIndicator.count(),
-      prisma.threatIndicator.groupBy({
-        by: ['severity'],
-        _count: { severity: true },
-      }),
-      prisma.threatIndicator.groupBy({
-        by: ['indicatorType'],
-        _count: { indicatorType: true },
-      }),
-      prisma.threatIndicator.aggregate({
-        _avg: { confidenceScore: true },
-      })
-    ]);
+    // Implement Promise memoization to prevent Cache Stampede (Thundering Herd).
+    // Expected impact: Prevents massive database connection pool spikes when multiple clients
+    // poll the expired stats endpoint simultaneously by ensuring only one query executes.
+    if (!statsPromise) {
+      statsPromise = Promise.all([
+        prisma.threatIndicator.count(),
+        prisma.threatIndicator.groupBy({
+          by: ['severity'],
+          _count: { severity: true },
+        }),
+        prisma.threatIndicator.groupBy({
+          by: ['indicatorType'],
+          _count: { indicatorType: true },
+        }),
+        prisma.threatIndicator.aggregate({
+          _avg: { confidenceScore: true },
+        })
+      ]).then(([totalCount, severityGroups, typeGroups, confidenceAgg]) => {
+        const data = {
+          totalCount,
+          countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
+          countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
+          averageConfidence: confidenceAgg._avg.confidenceScore || 0,
+        };
 
-    const data = {
-      totalCount,
-      countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
-      countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
-      averageConfidence: confidenceAgg._avg.confidenceScore || 0,
-    };
+        statsCache = { data, timestamp: Date.now() };
+        statsPromise = null;
+        return data;
+      }).catch(error => {
+        statsPromise = null;
+        throw error;
+      });
+    }
 
-    statsCache = { data, timestamp: Date.now() };
-
+    const data = await statsPromise;
     res.json(data);
   } catch (error) {
     next(error);
