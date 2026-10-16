@@ -119,16 +119,22 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             </div>
           </section>
 
-          {indicator.enrichmentSummary && (
-            <section>
-              <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
-                <span className="mr-2" aria-hidden="true">🤖</span> AI Analyst Brief
-              </h3>
+          <section>
+            <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
+              <span className="mr-2" aria-hidden="true">🤖</span> AI Analyst Brief
+            </h3>
+            {indicator.enrichmentSummary ? (
               <div className="bg-threat-bg border border-threat-border rounded-lg p-4 text-sm leading-relaxed text-threat-text/90">
                 {indicator.enrichmentSummary}
               </div>
-            </section>
-          )}
+            ) : (
+              <div className="bg-threat-bg/50 border border-threat-border border-dashed rounded-lg p-4 text-sm text-threat-muted text-center flex flex-col items-center justify-center space-y-2">
+                <span className="text-2xl opacity-50" aria-hidden="true">🔍</span>
+                <p>No AI analysis available yet.</p>
+                <p className="text-xs opacity-75">Click 'Trigger Enrichment' below to generate a brief.</p>
+              </div>
+            )}
+          </section>
 
           <section>
             <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2">MITRE ATT&CK</h3>
@@ -174,6 +180,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             onClick={handleEnrich} 
             disabled={enriching}
             aria-busy={enriching}
+            title={enriching ? 'Enrichment in progress...' : ''}
             className="w-full py-2 px-4 bg-threat-accent hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-offset-2 focus-visible:ring-offset-threat-bg text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {enriching ? (
@@ -185,7 +192,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
                 Enriching...
               </>
             ) : (
-              <><span aria-hidden="true">✨</span> Trigger Enrichment</>
+              <><span aria-hidden="true">✨</span> {indicator.enrichmentSummary ? 'Re-run Enrichment' : 'Trigger Enrichment'}</>
             )}
           </button>
         </div>
