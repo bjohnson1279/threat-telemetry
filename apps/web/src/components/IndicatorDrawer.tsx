@@ -155,7 +155,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
                 <span aria-hidden="true">{jsonCopied ? '✅' : '📋'}</span>
               </button>
             </div>
-            <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto">
+            <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-threat-accent" tabIndex={0} role="region" aria-label="Raw JSON data">
               <pre className="text-xs font-mono text-threat-muted">
                 {JSON.stringify(indicator, null, 2)}
               </pre>

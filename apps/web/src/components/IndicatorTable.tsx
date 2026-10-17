@@ -92,9 +92,9 @@ export const IndicatorTable: React.FC = () => {
       <FilterBar filters={filters} setFilters={setFilters} searchInputRef={searchInputRef} />
 
       <div className="flex-1 bg-threat-surface border border-threat-border rounded-lg overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-threat-accent" tabIndex={0} role="region" aria-labelledby="table-caption">
           <table className="w-full text-left border-collapse">
-            <caption className="sr-only">Threat Indicators Data Table</caption>
+            <caption id="table-caption" className="sr-only">Threat Indicators Data Table</caption>
             <thead>
               <tr className="bg-threat-bg/80 border-b border-threat-border text-threat-muted text-sm uppercase tracking-wider">
                 <th scope="col" className="p-4 font-medium">Indicator</th>
