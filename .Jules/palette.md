@@ -8,3 +8,7 @@
 ## 2026-10-15 - Skip to Content Link
 **Learning:** Adding a "Skip to main content" link is a critical accessibility feature for keyboard users to bypass repetitive navigation. It must be focusable and properly skip to the main content area with `tabIndex={-1}` so that it doesn't break normal tab flow when not navigated to via the skip link.
 **Action:** Always include a visually hidden (but focusable) skip link at the top of the app that points to the main content area, and ensure the target has `tabIndex={-1}`.
+
+## 2026-10-17 - Scrollable Region Accessibility
+**Learning:** Keyboard-only users cannot scroll regions with 'overflow-x-auto' or 'overflow-y-auto' (like data tables or code blocks) using arrow keys unless the container can receive focus.
+**Action:** Add 'tabIndex={0}', 'role="region"', an appropriate 'aria-label' or 'aria-labelledby', and a clear focus indicator to all scrollable containers.
