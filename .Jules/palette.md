@@ -8,3 +8,7 @@
 ## 2026-10-15 - Skip to Content Link
 **Learning:** Adding a "Skip to main content" link is a critical accessibility feature for keyboard users to bypass repetitive navigation. It must be focusable and properly skip to the main content area with `tabIndex={-1}` so that it doesn't break normal tab flow when not navigated to via the skip link.
 **Action:** Always include a visually hidden (but focusable) skip link at the top of the app that points to the main content area, and ensure the target has `tabIndex={-1}`.
+
+## 2026-10-16 - Empty States for Context-Dependent Actions
+**Learning:** Hiding sections of a UI (like an AI summary) entirely when data is absent can cause discoverability issues. Users may not realize an action (like "Trigger Enrichment") populates that specific area until they try it.
+**Action:** Replace conditional rendering of entire structural sections with explicit, helpful empty states inside those sections to guide the user and establish spatial expectations early.
