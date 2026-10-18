@@ -92,7 +92,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           <button ref={closeButtonRef} onClick={onClose} aria-label="Close drawer" title="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0"><span aria-hidden="true">&times;</span></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-inset" tabIndex={0} role="region" aria-label="Indicator Details">
           <section>
             <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2">Overview</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -145,7 +145,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
 
           <section>
             <div className="flex items-center justify-between border-b border-threat-border mb-4 pb-2">
-              <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider">Raw Data</h3>
+              <h3 id="raw-data-heading" className="text-sm font-semibold text-threat-muted uppercase tracking-wider">Raw Data</h3>
               <button
                 onClick={handleCopyJson}
                 aria-label={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
@@ -155,7 +155,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
                 <span aria-hidden="true">{jsonCopied ? '✅' : '📋'}</span>
               </button>
             </div>
-            <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto">
+            <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent" tabIndex={0} role="region" aria-labelledby="raw-data-heading">
               <pre className="text-xs font-mono text-threat-muted">
                 {JSON.stringify(indicator, null, 2)}
               </pre>
