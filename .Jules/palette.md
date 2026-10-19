@@ -12,3 +12,7 @@
 ## 2026-10-16 - Empty States for Context-Dependent Actions
 **Learning:** Hiding sections of a UI (like an AI summary) entirely when data is absent can cause discoverability issues. Users may not realize an action (like "Trigger Enrichment") populates that specific area until they try it.
 **Action:** Replace conditional rendering of entire structural sections with explicit, helpful empty states inside those sections to guide the user and establish spatial expectations early.
+
+## 2026-10-17 - Prevent Focus Drop on Disabled Buttons
+**Learning:** When a button becomes disabled as a direct result of user interaction (e.g., an async submit button going into a loading state, or pagination hitting the first/last page), setting the HTML `disabled` attribute causes the browser to immediately drop keyboard focus to the `<body>`. This forces keyboard and screen reader users to restart their navigation from the top of the page.
+**Action:** Instead of the HTML `disabled` attribute, use `aria-disabled={true}` combined with visual disabled styling (e.g., `aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`) and an early return in the `onClick` handler. This keeps the button focusable but inactive, preserving the user's focus context.

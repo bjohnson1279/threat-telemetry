@@ -37,20 +37,24 @@ export const Pagination: React.FC<PaginationProps> = ({ page, totalPages, setPag
         </span>
         <div className="flex space-x-2">
           <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page <= 1}
+            onClick={() => {
+              if (page > 1) setPage(Math.max(1, page - 1));
+            }}
+            aria-disabled={page <= 1}
             aria-label="Previous page"
             title={page <= 1 ? "First page reached" : "Previous page"}
-            className="px-3 py-1 bg-threat-bg border border-threat-border rounded hover:bg-threat-border disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
+            className="px-3 py-1 bg-threat-bg border border-threat-border rounded hover:bg-threat-border aria-disabled:opacity-50 aria-disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
           >
             Prev
           </button>
           <button
-            onClick={() => setPage(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages || totalPages === 0}
+            onClick={() => {
+              if (page < totalPages && totalPages > 0) setPage(Math.min(totalPages, page + 1));
+            }}
+            aria-disabled={page >= totalPages || totalPages === 0}
             aria-label="Next page"
             title={page >= totalPages || totalPages === 0 ? "Last page reached" : "Next page"}
-            className="px-3 py-1 bg-threat-bg border border-threat-border rounded hover:bg-threat-border disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
+            className="px-3 py-1 bg-threat-bg border border-threat-border rounded hover:bg-threat-border aria-disabled:opacity-50 aria-disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
           >
             Next
           </button>
