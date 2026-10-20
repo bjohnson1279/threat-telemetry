@@ -70,21 +70,34 @@ export function parseCSVPayload(csvContent: string): RawIndicator[] {
       continue;
     }
 
-    const values = line.split(',').map(v => v.trim());
-    const rowObj: Record<string, string> = {};
-    headers.forEach((h, idx) => {
-      if (values[idx]) {
-        rowObj[h] = values[idx];
-      }
-    });
+    const values = line.split(',');
+    let val: string | undefined;
+    let typ: string | undefined;
+    let src: string | undefined;
+    let tag: string | undefined;
 
-    const parsed = csvRowSchema.safeParse(rowObj);
-    if (parsed.success) {
+    for (let i = 0; i < headers.length; i++) {
+      const h = headers[i];
+      const v = values[i]?.trim();
+      if (v) {
+        if (h === 'value') val = v;
+        else if (h === 'type') typ = v;
+        else if (h === 'source') src = v;
+        else if (h === 'tags') tag = v;
+      }
+    }
+
+    if (
+      val && val.length >= 1 && val.length <= 2048 &&
+      typ && typ.length <= 100 &&
+      (!src || src.length <= 256) &&
+      (!tag || tag.length <= 10000)
+    ) {
       results.push({
-        value: parsed.data.value,
-        type: VALID_INDICATOR_TYPES.has(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
-        source: parsed.data.source,
-        tags: parsed.data.tags ? parsed.data.tags.split(';') : [],
+        value: val,
+        type: VALID_INDICATOR_TYPES.has(typ) ? typ as IndicatorType : IndicatorType.DOMAIN,
+        source: src,
+        tags: tag ? tag.split(';') : [],
       });
     }
   }

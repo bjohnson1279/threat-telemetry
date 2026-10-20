@@ -118,3 +118,7 @@
 ## 2026-10-15 - Cache Stampede Prevention
 **Learning:** When using simple TTL caching on expensive endpoints, multiple concurrent requests during the expiration window will all trigger the heavy database query simultaneously, causing a Thundering Herd.
 **Action:** Implement Promise memoization alongside the TTL cache. Store the in-flight Promise globally so concurrent requests can await the same database execution instead of spawning duplicate queries.
+
+## 2026-10-20 - Zod validation overhead in hot loops
+**Learning:** Using robust validation libraries like Zod inside a hot loop (like processing each line of a 100,000+ row CSV) introduces significant overhead due to heavy object allocation and schema parsing logic. This can severely block the Node.js event loop during bulk data ingestion.
+**Action:** Replace Zod validation with native JavaScript conditional checks (checking lengths, types, and boundaries directly) inside the hot loop to drastically reduce processing time, while still enforcing the same limits.
