@@ -177,11 +177,17 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             </div>
           )}
           <button 
-            onClick={handleEnrich} 
-            disabled={enriching}
+            onClick={(e) => {
+              if (enriching) {
+                e.preventDefault();
+                return;
+              }
+              handleEnrich();
+            }}
+            aria-disabled={enriching}
             aria-busy={enriching}
             title={enriching ? 'Enrichment in progress...' : ''}
-            className="w-full py-2 px-4 bg-threat-accent hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-offset-2 focus-visible:ring-offset-threat-bg text-white rounded font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full py-2 px-4 bg-threat-accent hover:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-offset-2 focus-visible:ring-offset-threat-bg text-white rounded font-medium transition-colors aria-disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:hover:bg-threat-accent flex items-center justify-center"
           >
             {enriching ? (
               <>
