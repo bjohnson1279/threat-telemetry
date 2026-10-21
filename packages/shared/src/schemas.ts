@@ -78,13 +78,25 @@ export function parseCSVPayload(csvContent: string): RawIndicator[] {
       }
     });
 
-    const parsed = csvRowSchema.safeParse(rowObj);
-    if (parsed.success) {
+    // ⚡ Bolt: [performance improvement]
+    // Replaced Zod's safeParse inside the tight loop with native JavaScript conditional checks.
+    // Impact: Drastically reduces object allocation overhead and CPU time, preventing event loop blocking during large CSV ingestion.
+    const val = rowObj['value'];
+    const typeStr = rowObj['type'];
+    const sourceStr = rowObj['source'];
+    const tagsStr = rowObj['tags'];
+
+    if (
+      typeof val === 'string' && val.length >= 1 && val.length <= 2048 &&
+      typeof typeStr === 'string' && typeStr.length <= 100 &&
+      (sourceStr === undefined || (typeof sourceStr === 'string' && sourceStr.length <= 256)) &&
+      (tagsStr === undefined || (typeof tagsStr === 'string' && tagsStr.length <= 10000))
+    ) {
       results.push({
-        value: parsed.data.value,
-        type: VALID_INDICATOR_TYPES.has(parsed.data.type) ? parsed.data.type as IndicatorType : IndicatorType.DOMAIN,
-        source: parsed.data.source,
-        tags: parsed.data.tags ? parsed.data.tags.split(';') : [],
+        value: val,
+        type: VALID_INDICATOR_TYPES.has(typeStr) ? typeStr as IndicatorType : IndicatorType.DOMAIN,
+        source: sourceStr,
+        tags: tagsStr ? tagsStr.split(';') : [],
       });
     }
   }
