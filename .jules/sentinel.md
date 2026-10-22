@@ -138,3 +138,7 @@
 **Vulnerability:** The API key validation checked string lengths before calling `crypto.timingSafeEqual`, creating a timing vulnerability that could leak the length of the expected API key.
 **Learning:** To prevent length-based timing attacks, always hash both the provided key and the expected key using a secure algorithm (like SHA-256) to ensure fixed-length buffers before passing them to `crypto.timingSafeEqual`.
 **Prevention:** Never check the length of a secret string before a constant-time comparison. Instead, hash the inputs to guarantee equal lengths.
+## 2024-05-18 - Prevent Sensitive Information Leakage in Logs
+**Vulnerability:** The global `pino` logger did not implement redaction, meaning sensitive credentials (like `x-api-key`, `password`) would be exposed in plaintext in logs if an error or request object containing them was logged.
+**Learning:** Even if `sanitizeForLog` is implemented in shared utilities, the core logger itself must enforce global redaction configuration natively as a fail-safe against un-sanitized objects being passed directly.
+**Prevention:** Always configure `redact` options with wildcard paths (e.g. `*.apiKey`, `req.headers["x-api-key"]`) on `pino` logger instances during initialization.
