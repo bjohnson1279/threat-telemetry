@@ -142,3 +142,7 @@
 **Vulnerability:** The global `pino` logger did not implement redaction, meaning sensitive credentials (like `x-api-key`, `password`) would be exposed in plaintext in logs if an error or request object containing them was logged.
 **Learning:** Even if `sanitizeForLog` is implemented in shared utilities, the core logger itself must enforce global redaction configuration natively as a fail-safe against un-sanitized objects being passed directly.
 **Prevention:** Always configure `redact` options with wildcard paths (e.g. `*.apiKey`, `req.headers["x-api-key"]`) on `pino` logger instances during initialization.
+## 2023-10-23 - Prevent global credential leakage in logger
+**Vulnerability:** The worker logger lacked a redact configuration, and the API logger lacked standard key variations (`api_key`, `apikey`), allowing credentials to leak in logs if passed in error objects or payloads.
+**Learning:** Even if utility functions like `sanitizeForLog` exist, native global logger redaction (e.g., via pino `redact`) must be configured with case-insensitive and standard variations as a fail-safe.
+**Prevention:** Always configure `redact` options natively on global logger instances with wildcard paths for credentials to prevent sensitive data leakage.
