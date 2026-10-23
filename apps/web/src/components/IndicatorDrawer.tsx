@@ -120,7 +120,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             </div>
           </section>
 
-          <section>
+          <section aria-live="polite" aria-atomic="true">
             <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
               <span className="mr-2" aria-hidden="true">🤖</span> AI Analyst Brief
             </h3>

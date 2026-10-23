@@ -16,3 +16,7 @@
 ## 2026-10-21 - Accessible Disabled States
 **Learning:** Using the native disabled attribute on buttons causes them to lose focus when they enter a disabled state (e.g., during loading or pagination limits), which disrupts keyboard navigation.
 **Action:** Use aria-disabled={true} along with early returns in the onClick handler and aria-disabled styling variants to keep the element focusable but inactive.
+
+## 2026-10-24 - Screen Reader Announcements for Async Content Above Triggers
+**Learning:** When async content (like an AI summary) populates *above* its action button in the DOM, screen reader users won't know it appeared because focus remains on the button below it.
+**Action:** Wrap the dynamically updating container in an `aria-live="polite"` region so the new content is proactively announced.
