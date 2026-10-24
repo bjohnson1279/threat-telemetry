@@ -30,7 +30,7 @@ const CopyButton: React.FC<{ value: string }> = React.memo(({ value }) => {
       onClick={handleCopy}
       aria-label={copied ? 'Copied!' : `Copy indicator ${value}`}
       title={copied ? 'Copied!' : `Copy indicator ${value}`}
-      className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0"
+      className={`focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0 ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
     >
       <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
     </button>
@@ -40,9 +40,14 @@ const CopyButton: React.FC<{ value: string }> = React.memo(({ value }) => {
 // ⚡ Bolt: [performance improvement]
 // Memoize individual table rows to prevent re-rendering all rows when the parent state (like selectedIndicator or drawer state) changes.
 // Expected impact: Eliminates wasteful Virtual DOM re-renders of up to 100 rows when opening/closing the drawer.
-const IndicatorRow = React.memo(({ ind, index, onClick }: { ind: ThreatIndicator, index: number, onClick: (ind: ThreatIndicator) => void }) => (
+const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: ThreatIndicator, index: number, onClick: (ind: ThreatIndicator) => void, isSelected?: boolean }) => (
   <tr
-    className={`hover:bg-threat-border/30 transition-colors cursor-pointer group ${index % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`}
+    aria-selected={isSelected}
+    className={`transition-colors cursor-pointer group ${
+      isSelected
+        ? 'bg-threat-accent/20 hover:bg-threat-accent/30'
+        : `hover:bg-threat-border/30 ${index % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`
+    }`}
     onClick={() => onClick(ind)}
   >
     <td className="p-4 font-mono max-w-[200px]" title={ind.indicatorValue}>
@@ -161,6 +166,7 @@ export const IndicatorTable: React.FC = () => {
                     ind={ind}
                     index={i}
                     onClick={setSelectedIndicator}
+                    isSelected={selectedIndicator?.id === ind.id}
                   />
                 ))
               )}
