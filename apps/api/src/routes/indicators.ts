@@ -89,7 +89,13 @@ router.post(
 
       for (const batch of concurrentBatches) {
         const results = await Promise.all(
-          batch.map(chunk => prisma.threatIndicator.createManyAndReturn({ data: chunk }))
+          batch.map(chunk => prisma.threatIndicator.createManyAndReturn({
+            data: chunk,
+            // ⚡ Bolt: [performance improvement]
+            // Added select: { id: true } to prevent Prisma from returning the full object for every inserted row.
+            // Expected impact: Massively reduces memory allocation and network payload size between the database and Node.js process during bulk ingestions.
+            select: { id: true }
+          }))
         );
         for (const created of results) {
           ingestedCount += created.length;
