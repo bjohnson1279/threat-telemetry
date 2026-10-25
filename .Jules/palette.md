@@ -20,3 +20,6 @@
 ## 2026-10-24 - Screen Reader Announcements for Async Content Above Triggers
 **Learning:** When async content (like an AI summary) populates *above* its action button in the DOM, screen reader users won't know it appeared because focus remains on the button below it.
 **Action:** Wrap the dynamically updating container in an `aria-live="polite"` region so the new content is proactively announced.
+## 2024-10-24 - Accessibility improvements to Indicator Table and Drawer
+**Learning:** In tables where rows are selectable, using `aria-selected` and conditional classes is an effective way to indicate selection. However, modifying `aria-selected` without proper `role="row"` or modifying `tr` elements where screen readers do not expect them can be problematic. A more standard improvement is handling copy buttons appropriately. `IndicatorTable.tsx`'s copy button could use better keyboard accessibility - making sure the copy button appears when focused, not just on group hover, ensures keyboard users can access it without a mouse.
+**Action:** Always verify `focus-visible` styles explicitly show interactive elements that rely on `group-hover`.
