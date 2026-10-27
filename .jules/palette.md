@@ -12,3 +12,18 @@
 ## 2026-10-16 - Empty States for Context-Dependent Actions
 **Learning:** Hiding sections of a UI (like an AI summary) entirely when data is absent can cause discoverability issues. Users may not realize an action (like "Trigger Enrichment") populates that specific area until they try it.
 **Action:** Replace conditional rendering of entire structural sections with explicit, helpful empty states inside those sections to guide the user and establish spatial expectations early.
+
+## 2026-10-21 - Accessible Disabled States
+**Learning:** Using the native disabled attribute on buttons causes them to lose focus when they enter a disabled state (e.g., during loading or pagination limits), which disrupts keyboard navigation.
+**Action:** Use aria-disabled={true} along with early returns in the onClick handler and aria-disabled styling variants to keep the element focusable but inactive.
+
+## 2026-10-24 - Screen Reader Announcements for Async Content Above Triggers
+**Learning:** When async content (like an AI summary) populates *above* its action button in the DOM, screen reader users won't know it appeared because focus remains on the button below it.
+**Action:** Wrap the dynamically updating container in an `aria-live="polite"` region so the new content is proactively announced.
+## 2024-10-24 - Accessibility improvements to Indicator Table and Drawer
+**Learning:** In tables where rows are selectable, using `aria-selected` and conditional classes is an effective way to indicate selection. However, modifying `aria-selected` without proper `role="row"` or modifying `tr` elements where screen readers do not expect them can be problematic. A more standard improvement is handling copy buttons appropriately. `IndicatorTable.tsx`'s copy button could use better keyboard accessibility - making sure the copy button appears when focused, not just on group hover, ensures keyboard users can access it without a mouse.
+**Action:** Always verify `focus-visible` styles explicitly show interactive elements that rely on `group-hover`.
+
+## 2026-10-26 - Focus-within for Row-level Actions
+**Learning:** When interactive elements rely on `group-hover` for discoverability (like a copy button in a table row), keyboard users are left in the dark unless they tab directly onto the hidden button. `focus-visible` only styles the element itself when focused, but doesn't make it visible when the *row* is focused.
+**Action:** Always complement `group-hover:opacity-100` with `group-focus-within:opacity-100` on row-level actions. This ensures the action becomes visible as soon as the user's keyboard focus enters any part of that row group, providing equal discoverability for keyboard navigation.
