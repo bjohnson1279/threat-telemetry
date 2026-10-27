@@ -23,3 +23,7 @@
 ## 2024-10-24 - Accessibility improvements to Indicator Table and Drawer
 **Learning:** In tables where rows are selectable, using `aria-selected` and conditional classes is an effective way to indicate selection. However, modifying `aria-selected` without proper `role="row"` or modifying `tr` elements where screen readers do not expect them can be problematic. A more standard improvement is handling copy buttons appropriately. `IndicatorTable.tsx`'s copy button could use better keyboard accessibility - making sure the copy button appears when focused, not just on group hover, ensures keyboard users can access it without a mouse.
 **Action:** Always verify `focus-visible` styles explicitly show interactive elements that rely on `group-hover`.
+
+## 2026-10-27 - Focus-within for Hover-dependent Actions
+**Learning:** Interactive elements (like copy buttons) that rely on `group-hover` for visibility are often missed by keyboard users when they tab through a component. Even if they have `focus-visible` styles, they won't appear if the user focuses on a *different* interactive element within the same group (e.g., tabbing to a "View" button in a table row).
+**Action:** Always add `group-focus-within` styles (e.g., `group-focus-within:opacity-100`) alongside `group-hover` and `focus-visible` styles to ensure row-level or group-level actions remain discoverable when any element within that group receives keyboard focus.
