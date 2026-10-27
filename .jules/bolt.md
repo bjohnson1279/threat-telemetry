@@ -122,3 +122,6 @@
 ## 2026-10-20 - Zod validation overhead in hot loops
 **Learning:** Using robust validation libraries like Zod inside a hot loop (like processing each line of a 100,000+ row CSV) introduces significant overhead due to heavy object allocation and schema parsing logic. This can severely block the Node.js event loop during bulk data ingestion.
 **Action:** Replace Zod validation with native JavaScript conditional checks (checking lengths, types, and boundaries directly) inside the hot loop to drastically reduce processing time, while still enforcing the same limits.
+## 2024-10-27 - Prisma createManyAndReturn Memory Bloat
+**Learning:** Using Prisma's createManyAndReturn without select fetches all columns for every inserted row, causing massive memory bloat and database network serialization overhead.
+**Action:** Always append select: { id: true } when only IDs are needed during bulk inserts.

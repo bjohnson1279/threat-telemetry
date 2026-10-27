@@ -89,7 +89,10 @@ router.post(
 
       for (const batch of concurrentBatches) {
         const results = await Promise.all(
-          batch.map(chunk => prisma.threatIndicator.createManyAndReturn({ data: chunk }))
+          batch.map(chunk => prisma.threatIndicator.createManyAndReturn({
+            data: chunk,
+            select: { id: true }
+          }))
         );
         for (const created of results) {
           ingestedCount += created.length;
