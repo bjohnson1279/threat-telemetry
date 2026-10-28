@@ -9,7 +9,12 @@ export const MitreTags: React.FC<{ techniques?: string[] }> = React.memo(({ tech
   const hiddenCount = techniques.length - 3;
 
   return (
-    <div className="flex flex-wrap gap-1" title={techniques.join(', ')}>
+    <div
+      className="flex flex-wrap gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded"
+      title={techniques.join(', ')}
+      tabIndex={0}
+      aria-label={`View all ${techniques.length} MITRE techniques: ${techniques.join(', ')}`}
+    >
       {visible.map(t => (
         <span key={t} className="px-2 py-0.5 bg-threat-accent/20 text-threat-accent rounded-full text-xs border border-threat-accent/30">
           {t}
