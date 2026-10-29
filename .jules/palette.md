@@ -27,3 +27,7 @@
 ## 2026-10-26 - Focus-within for Row-level Actions
 **Learning:** When interactive elements rely on `group-hover` for discoverability (like a copy button in a table row), keyboard users are left in the dark unless they tab directly onto the hidden button. `focus-visible` only styles the element itself when focused, but doesn't make it visible when the *row* is focused.
 **Action:** Always complement `group-hover:opacity-100` with `group-focus-within:opacity-100` on row-level actions. This ensures the action becomes visible as soon as the user's keyboard focus enters any part of that row group, providing equal discoverability for keyboard navigation.
+
+## 2026-10-28 - Make truncated data with tooltips focusable
+**Learning:** When using `title` attributes on wrapper elements to show truncated data on hover, the element must be focusable (`tabIndex={0}`) with an `aria-label` for screen reader and keyboard users to access the full content.
+**Action:** Always add `tabIndex={0}`, focus-visible styles, and a descriptive `aria-label` to containers that use `title` for revealing truncated information.
