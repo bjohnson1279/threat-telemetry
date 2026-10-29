@@ -138,3 +138,8 @@
 **Vulnerability:** The API key validation checked string lengths before calling `crypto.timingSafeEqual`, creating a timing vulnerability that could leak the length of the expected API key.
 **Learning:** To prevent length-based timing attacks, always hash both the provided key and the expected key using a secure algorithm (like SHA-256) to ensure fixed-length buffers before passing them to `crypto.timingSafeEqual`.
 **Prevention:** Never check the length of a secret string before a constant-time comparison. Instead, hash the inputs to guarantee equal lengths.
+
+## 2024-10-18 - [HIGH] Fix Prompt Injection in LLM Enrichment
+**Vulnerability:** Untrusted user input was concatenated directly into the same prompt as the system instructions, allowing data poisoning.
+**Learning:** Malicious payloads could contain instructions that override the model's behavior.
+**Prevention:** Always separate system instructions from untrusted data by using the provider's native system prompt fields.
