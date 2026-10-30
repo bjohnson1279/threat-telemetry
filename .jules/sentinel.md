@@ -146,3 +146,7 @@
 **Vulnerability:** The worker logger lacked a redact configuration, and the API logger lacked standard key variations (`api_key`, `apikey`), allowing credentials to leak in logs if passed in error objects or payloads.
 **Learning:** Even if utility functions like `sanitizeForLog` exist, native global logger redaction (e.g., via pino `redact`) must be configured with case-insensitive and standard variations as a fail-safe.
 **Prevention:** Always configure `redact` options natively on global logger instances with wildcard paths for credentials to prevent sensitive data leakage.
+## 2023-11-01 - [CRITICAL] Prevent Prompt Injection in LLM APIs
+**Vulnerability:** Untrusted user input (rawPayload, indicatorValue) was concatenated directly into a single LLM prompt, exposing the system to prompt injection attacks.
+**Learning:** To prevent prompt injection vulnerabilities, never concatenate untrusted user input directly with system instructions.
+**Prevention:** Always separate system instructions from user data by using the provider's native system prompt fields (e.g., passing `{ role: 'system', content: ... }` for OpenAI or the top-level `system` property for Anthropic).
