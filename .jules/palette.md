@@ -31,3 +31,6 @@
 ## 2026-10-28 - Make truncated data with tooltips focusable
 **Learning:** When using `title` attributes on wrapper elements to show truncated data on hover, the element must be focusable (`tabIndex={0}`) with an `aria-label` for screen reader and keyboard users to access the full content.
 **Action:** Always add `tabIndex={0}`, focus-visible styles, and a descriptive `aria-label` to containers that use `title` for revealing truncated information.
+## 2024-10-31 - Keyboard Accessibility for Interactive Non-Button Elements
+**Learning:** When making non-interactive elements (like `<tr>` or `<div>`) act as clickable buttons using `onClick`, they must also be made keyboard-accessible by adding `tabIndex={0}` and an `onKeyDown` handler that triggers the action on 'Enter' or 'Space' key presses, along with visual focus indicators (e.g., `focus-visible`). This is a critical pattern for custom interactive components in data tables.
+**Action:** Always ensure that any element with an `onClick` handler also has a corresponding `onKeyDown` handler for 'Enter' and 'Space' (with `e.preventDefault()` for Space to prevent scrolling), a `tabIndex={0}`, and clear `focus-visible` styling.

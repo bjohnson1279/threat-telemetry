@@ -43,12 +43,19 @@ const CopyButton: React.FC<{ value: string }> = React.memo(({ value }) => {
 const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: ThreatIndicator, index: number, onClick: (ind: ThreatIndicator) => void, isSelected?: boolean }) => (
   <tr
     aria-selected={isSelected}
-    className={`transition-colors cursor-pointer group ${
+    tabIndex={0}
+    className={`transition-colors cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-threat-accent ${
       isSelected
         ? 'bg-threat-accent/20 hover:bg-threat-accent/30'
         : `hover:bg-threat-border/30 ${index % 2 === 0 ? 'bg-threat-surface' : 'bg-threat-bg/20'}`
     }`}
     onClick={() => onClick(ind)}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onClick(ind);
+      }
+    }}
   >
     <td className="p-4 font-mono max-w-[200px]" title={ind.indicatorValue}>
       <div className="flex items-center space-x-2">
