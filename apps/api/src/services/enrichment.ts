@@ -29,7 +29,8 @@ export class ThreatEnrichmentService {
   }
 
   async enrich(indicator: EnrichmentIndicator): Promise<EnrichmentResult> {
-    const prompt = this.buildPrompt(indicator);
+    const systemPrompt = this.getSystemPrompt();
+    const userPrompt = this.getUserPrompt(indicator);
     
     let attempt = 0;
     const maxRetries = 3;
@@ -41,9 +42,9 @@ export class ThreatEnrichmentService {
         let rawResponse: string;
         
         if (this.config.provider === 'openai') {
-          rawResponse = await this.callOpenAI(prompt);
+          rawResponse = await this.callOpenAI(systemPrompt, userPrompt);
         } else {
-          rawResponse = await this.callAnthropic(prompt);
+          rawResponse = await this.callAnthropic(systemPrompt, userPrompt);
         }
 
         const parsedJson = this.extractJSON(rawResponse);
@@ -72,13 +73,9 @@ export class ThreatEnrichmentService {
     };
   }
 
-  private buildPrompt(indicator: EnrichmentIndicator): string {
-    return `Analyze the following threat indicator (IOC) and provide an assessment.
+  private getSystemPrompt(): string {
+    return `Analyze the provided threat indicator (IOC) and provide an assessment.
     
-Indicator Type: \${indicator.type}
-Indicator Value: \${indicator.value}
-Additional Context: \${JSON.stringify(indicator.rawPayload)}
-
 Return ONLY a JSON object with the following exact structure:
 {
   "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
@@ -88,6 +85,12 @@ Return ONLY a JSON object with the following exact structure:
 }
 
 Do not include markdown blocks or any other text outside the JSON.`;
+  }
+
+  private getUserPrompt(indicator: EnrichmentIndicator): string {
+    return `Indicator Type: ${indicator.type}
+Indicator Value: ${indicator.value}
+Additional Context: ${JSON.stringify(indicator.rawPayload)}`;
   }
 
   private extractJSON(text: string): any {
@@ -100,7 +103,7 @@ Do not include markdown blocks or any other text outside the JSON.`;
     return JSON.parse(jsonStr);
   }
 
-  private async callOpenAI(prompt: string): Promise<string> {
+  private async callOpenAI(systemPrompt: string, userPrompt: string): Promise<string> {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -109,7 +112,10 @@ Do not include markdown blocks or any other text outside the JSON.`;
       },
       body: JSON.stringify({
         model: this.config.model,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
         response_format: { type: 'json_object' },
         temperature: 0.1,
       }),
@@ -126,7 +132,7 @@ Do not include markdown blocks or any other text outside the JSON.`;
     return data.choices[0].message.content;
   }
 
-  private async callAnthropic(prompt: string): Promise<string> {
+  private async callAnthropic(systemPrompt: string, userPrompt: string): Promise<string> {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -136,8 +142,9 @@ Do not include markdown blocks or any other text outside the JSON.`;
       },
       body: JSON.stringify({
         model: this.config.model,
+        system: systemPrompt,
         max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{ role: 'user', content: userPrompt }],
         temperature: 0.1,
       }),
       // Sentinel: [security improvement]
