@@ -35,3 +35,6 @@
 ## 2026-10-31 - Keyboard accessibility for interactive table rows
 **Learning:** Interactive table rows that trigger selection or open details drawers must support keyboard navigation (tabIndex={0}, focus rings) and handle Enter/Space key presses.
 **Action:** Always add keyboard handlers and visible focus styling when making table rows interactive.
+## 2023-11-01 - Accessible Truncated Text with Tooltips
+**Learning:** Using title attributes on a wrapper element (like a <td>) to reveal truncated data on hover is inaccessible to keyboard and screen reader users if the element lacks focusability and explicit ARIA labeling.
+**Action:** When implementing truncated text tooltips, always ensure the element bearing the title attribute is keyboard focusable (tabIndex={0}) and includes an explicit aria-label to provide the full content to assistive technologies.

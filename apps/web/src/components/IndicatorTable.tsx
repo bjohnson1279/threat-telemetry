@@ -57,9 +57,16 @@ const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: Thr
       }
     }}
   >
-    <td className="p-4 font-mono max-w-[200px]" title={ind.indicatorValue}>
+    <td className="p-4 font-mono max-w-[200px]">
       <div className="flex items-center space-x-2">
-        <span className="flex-1 min-w-0 truncate">{ind.indicatorValue}</span>
+        <span
+          className="flex-1 min-w-0 truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1"
+          title={ind.indicatorValue}
+          tabIndex={0}
+          aria-label={`Full indicator value: ${ind.indicatorValue}`}
+        >
+          {ind.indicatorValue}
+        </span>
         <CopyButton value={ind.indicatorValue} />
       </div>
     </td>
