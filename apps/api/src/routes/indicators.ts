@@ -96,7 +96,7 @@ router.post(
         );
         for (const created of results) {
           ingestedCount += created.length;
-          allIds.push(...created.map((c) => c.id));
+          allIds.push(...created.map((c: any) => c.id));
         }
       }
 
@@ -129,7 +129,7 @@ router.get(
         sortOrder = 'desc',
       } = req.query as any;
 
-      const where: Prisma.ThreatIndicatorWhereInput = {};
+      const where: any = {};
 
       if (search) {
         where.indicatorValue = { contains: search, mode: 'insensitive' };
@@ -215,8 +215,8 @@ router.get('/stats/summary', requireAuth, async (req: Request, res: Response, ne
       ]).then(([totalCount, severityGroups, typeGroups, confidenceAgg]) => {
         const data = {
           totalCount,
-          countBySeverity: severityGroups.reduce((acc, curr) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
-          countByType: typeGroups.reduce((acc, curr) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
+          countBySeverity: severityGroups.reduce((acc: any, curr: any) => ({ ...acc, [curr.severity]: curr._count.severity }), {}),
+          countByType: typeGroups.reduce((acc: any, curr: any) => ({ ...acc, [curr.indicatorType]: curr._count.indicatorType }), {}),
           averageConfidence: confidenceAgg._avg.confidenceScore || 0,
         };
 
