@@ -13,7 +13,7 @@ export const validate = (
       if (error instanceof ZodError) {
         res.status(400).json({
           error: 'Validation Error',
-          details: error.errors,
+          details: error.issues,
         });
         return;
       }

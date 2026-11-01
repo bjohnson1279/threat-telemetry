@@ -14,7 +14,7 @@ export const errorHandler = (
   if (err instanceof ZodError) {
     res.status(400).json({
       error: 'Validation Error',
-      details: err.errors,
+      details: err.issues,
     });
     return;
   }

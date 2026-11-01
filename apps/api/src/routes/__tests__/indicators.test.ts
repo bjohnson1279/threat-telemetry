@@ -415,7 +415,7 @@ describe('Indicators Routes', () => {
 
   describe('GET /:id (Detail)', () => {
     it('should return indicator detail when found', async () => {
-      const uuid = '12345678-1234-1234-1234-123456789012';
+      const uuid = '12345678-1234-4234-a234-123456789012';
       const mockIndicator = {
         id: uuid,
         indicatorValue: '192.168.1.1',
@@ -462,7 +462,7 @@ describe('Indicators Routes', () => {
       process.env.OPENAI_API_KEY = 'test';
 
       const req = {
-        params: { id: '12345678-1234-1234-1234-123456789012' },
+        params: { id: '12345678-1234-4234-a234-123456789012' },
         headers: {
           'x-api-key': 'test-internal-key'
         },
@@ -472,14 +472,14 @@ describe('Indicators Routes', () => {
       const res = mockResponse();
 
       (prisma.threatIndicator.findUnique as any).mockResolvedValue({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         indicatorValue: 'bad.com',
         indicatorType: 'DOMAIN',
         rawPayload: {}
       });
 
       (prisma.threatIndicator.update as any).mockResolvedValue({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         severity: 'HIGH'
       });
 
@@ -490,14 +490,14 @@ describe('Indicators Routes', () => {
       await handler(req, res, mockNext);
 
       expect(prisma.threatIndicator.update).toHaveBeenCalledWith(expect.objectContaining({
-        where: { id: '12345678-1234-1234-1234-123456789012' },
+        where: { id: '12345678-1234-4234-a234-123456789012' },
         data: expect.objectContaining({
           severity: 'HIGH'
         })
       }));
 
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         severity: 'HIGH'
       }));
     });
@@ -529,7 +529,7 @@ describe('Indicators Routes', () => {
       process.env.LLM_PROVIDER = 'openai';
 
       const req = {
-        params: { id: '12345678-1234-1234-1234-123456789012' },
+        params: { id: '12345678-1234-4234-a234-123456789012' },
         headers: { 'x-api-key': 'test-internal-key' },
         ip: '127.0.0.1',
         app: { get: () => '127.0.0.1' }
@@ -537,7 +537,7 @@ describe('Indicators Routes', () => {
       const res = mockResponse();
 
       (prisma.threatIndicator.findUnique as any).mockResolvedValue({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         indicatorValue: 'bad.com',
         indicatorType: 'DOMAIN',
         rawPayload: {}
