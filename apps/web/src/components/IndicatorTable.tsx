@@ -26,14 +26,17 @@ const CopyButton: React.FC<{ value: string }> = React.memo(({ value }) => {
   };
 
   return (
-    <button
-      onClick={handleCopy}
-      aria-label={copied ? 'Copied!' : `Copy indicator ${value}`}
-      title={copied ? 'Copied!' : `Copy indicator ${value}`}
-      className={`focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0 ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'}`}
-    >
-      <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
-    </button>
+    <>
+      <button
+        onClick={handleCopy}
+        aria-label={copied ? 'Copied!' : `Copy indicator ${value}`}
+        title={copied ? 'Copied!' : `Copy indicator ${value}`}
+        className={`focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0 ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'}`}
+      >
+        <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
+      </button>
+      <span aria-live="polite" className="sr-only">{copied ? 'Copied to clipboard' : ''}</span>
+    </>
   );
 });
 

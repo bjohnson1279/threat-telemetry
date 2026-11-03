@@ -38,3 +38,7 @@
 ## 2023-11-01 - Accessible Truncated Text with Tooltips
 **Learning:** Using title attributes on a wrapper element (like a <td>) to reveal truncated data on hover is inaccessible to keyboard and screen reader users if the element lacks focusability and explicit ARIA labeling.
 **Action:** When implementing truncated text tooltips, always ensure the element bearing the title attribute is keyboard focusable (tabIndex={0}) and includes an explicit aria-label to provide the full content to assistive technologies.
+
+## 2026-11-02 - Screen Reader Announcements for Clipboard Actions
+**Learning:** When users click a "Copy to clipboard" button, changing the `aria-label` or `title` visually updates the tooltip, but screen readers typically do not announce the `aria-label` change of an already-focused element. This leaves visually impaired users without confirmation that the copy was successful.
+**Action:** Always include a visually hidden (`sr-only`) `<span aria-live="polite">` region alongside copy buttons to explicitly announce "Copied to clipboard" when the state changes.
