@@ -22,12 +22,14 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
   useEffect(() => {
     setEnrichError(null);
     if (indicator) {
+      document.body.style.overflow = 'hidden';
       previousFocusRef.current = document.activeElement as HTMLElement;
       // Small timeout to ensure the drawer is mounted and visible before focusing
       const timer = setTimeout(() => {
         closeButtonRef.current?.focus();
       }, 10);
       return () => {
+        document.body.style.overflow = '';
         clearTimeout(timer);
         if (previousFocusRef.current) {
           previousFocusRef.current.focus();
@@ -93,7 +95,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
               <span aria-live="polite" className="sr-only">{copied ? 'Copied indicator value to clipboard' : ''}</span>
             </>
           </div>
-          <button ref={closeButtonRef} onClick={onClose} aria-label="Close drawer" title="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0"><span aria-hidden="true">&times;</span></button>
+          <button ref={closeButtonRef} onClick={onClose} aria-label="Close drawer (Esc)" title="Close drawer (Esc)" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0"><span aria-hidden="true">&times;</span></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-inset" tabIndex={0} role="region" aria-label="Indicator Details">
