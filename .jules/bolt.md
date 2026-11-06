@@ -126,3 +126,6 @@
 ## 2026-10-25 - Prevent Memory Bloat in Prisma bulk inserts
 **Learning:** By default, Prisma's `createManyAndReturn` fetches all columns for every inserted row. During bulk data ingestion where only the IDs are required, this causes silent memory bloat and massive database network serialization overhead.
 **Action:** Always append `select: { id: true }` to `createManyAndReturn` when only the generated IDs are needed.
+## 2026-11-05 - Avoid Unnecessary Object Updates in React Polling
+**Learning:** Polling hooks often trigger re-renders even when the underlying data is identical because `fetch` returns a new object reference on every network request. Naively calling `setState(newData)` forces all downstream React components to re-render, blocking the main thread and wasting CPU cycles.
+**Action:** For React performance optimization during background polling, prevent unnecessary component re-renders when the fetched data hasn't changed by using a functional state setter with a shallow equality check (e.g., `setState(prev => (prev.value === newData.value ? prev : newData))`) to explicitly preserve the previous state reference.
