@@ -126,3 +126,7 @@
 ## 2026-10-25 - Prevent Memory Bloat in Prisma bulk inserts
 **Learning:** By default, Prisma's `createManyAndReturn` fetches all columns for every inserted row. During bulk data ingestion where only the IDs are required, this causes silent memory bloat and massive database network serialization overhead.
 **Action:** Always append `select: { id: true }` to `createManyAndReturn` when only the generated IDs are needed.
+
+## 2024-11-06 - Optimized detectIndicatorType regex overhead
+**Learning:** Re-evaluating multiple regex objects inside a hot loop (like bulk processing or CSV ingestion) introduces significant CPU overhead and blocks the Node event loop.
+**Action:** Always hoist regex instantiations outside of tight loop functions to avoid continuous recompilation. Additionally, use `.length` or early exit heuristics to bypass regex evaluations entirely for inputs where it's known to fail (e.g. hash length checks before running SHA256 test).
