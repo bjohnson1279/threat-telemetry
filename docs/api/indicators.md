@@ -50,7 +50,7 @@ Ingest batches of threat indicators into the system. Supports both JSON arrays a
 | --- | --- | --- | --- |
 | `indicators` | Array | **Required** | Array of raw indicator objects (min: 1, max: 10,000) |
 | `indicators[].value` | string | **Required** | Indicator value (1–2048 characters) |
-| `indicators[].type` | string | **Required** | Indicator type enum: `IP`, `DOMAIN`, `URL`, `FILE_HASH_MD5`, `FILE_HASH_SHA256`, `EMAIL`, `CVE` |
+| `indicators[].type` | string | **Required** | Indicator type enum: `IP_ADDRESS`, `IP`, `DOMAIN`, `URL`, `SHA256`, `SHA1`, `MD5`, `EMAIL`, `CVE` |
 | `indicators[].source` | string | Optional | Source identifier (max 256 characters) |
 | `indicators[].tags` | string[] | Optional | Array of tags (max 100 tags, each max 256 characters) |
 | `indicators[].metadata` | object | Optional | Key-value dictionary of metadata |
@@ -131,7 +131,7 @@ Retrieve paginated threat indicators with optional search and filtering criteria
 | Parameter | Type | Required / Optional | Default | Description |
 | --- | --- | --- | --- | --- |
 | `search` | string | Optional | None | Substring search on indicator value (case-insensitive, max 256 characters) |
-| `indicatorType` | string | Optional | None | Filter by indicator type (`IP`, `DOMAIN`, `URL`, `FILE_HASH_MD5`, `FILE_HASH_SHA256`, `EMAIL`, `CVE`) |
+| `indicatorType` | string | Optional | None | Filter by indicator type (`IP_ADDRESS`, `IP`, `DOMAIN`, `URL`, `SHA256`, `SHA1`, `MD5`, `EMAIL`, `CVE`) |
 | `severity` | string | Optional | None | Filter by severity (`LOW`, `MED`, `MEDIUM`, `HIGH`, `CRITICAL`) |
 | `minConfidence` | number | Optional | None | Minimum confidence score threshold (0–100) |
 | `maxConfidence` | number | Optional | None | Maximum confidence score threshold (0–100) |
@@ -224,7 +224,7 @@ Fetch aggregate counts, distribution by severity and type, and average confidenc
     "IP": 800,
     "DOMAIN": 400,
     "URL": 150,
-    "FILE_HASH_SHA256": 70
+    "SHA256": 70
   },
   "averageConfidence": 64.2
 }
