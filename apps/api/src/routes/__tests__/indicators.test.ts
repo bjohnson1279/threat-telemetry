@@ -249,6 +249,108 @@ describe('Indicators Routes', () => {
         error: 'Unauthorized: Invalid or missing API key'
       }));
     });
+
+    it('should handle multi-chunk batching (>100 indicators) and aggregate IDs and counts', async () => {
+      // 250 items will be split into 3 chunks (100, 100, 50)
+      const indicators = Array.from({ length: 250 }, (_, i) => ({
+        value: `threat-${i}.com`,
+        type: 'DOMAIN',
+        rawPayload: { index: i },
+      }));
+
+      const req = {
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'test-internal-key',
+        },
+        body: { indicators },
+      };
+      const res = mockResponse();
+
+      (prisma.threatIndicator.createManyAndReturn as any).mockImplementation(({ data }: any) => {
+        return Promise.resolve(data.map((d: any, idx: number) => ({ id: `id-${d.indicatorValue}` })));
+      });
+
+      await executeRoute('post', '/', req, res, mockNext);
+
+      expect(prisma.threatIndicator.createManyAndReturn).toHaveBeenCalledTimes(3);
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        ingested: 250,
+        ids: expect.arrayContaining(['id-threat-0.com', 'id-threat-249.com']),
+      });
+      const responseData = res.json.mock.calls[0][0];
+      expect(responseData.ids).toHaveLength(250);
+    });
+
+    it('should normalize indicator values and apply domain defaults on ingestion', async () => {
+      const req = {
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'test-internal-key',
+        },
+        body: {
+          indicators: [
+            { value: '  UPPERCASE-DOMAIN.COM  ', type: 'DOMAIN', rawPayload: { source: 'test' } },
+            { value: '  USER@DOMAIN.COM ', type: 'EMAIL' },
+          ],
+        },
+      };
+      const res = mockResponse();
+
+      (prisma.threatIndicator.createManyAndReturn as any).mockResolvedValue([
+        { id: '1' },
+        { id: '2' },
+      ]);
+
+      await executeRoute('post', '/', req, res, mockNext);
+
+      expect(prisma.threatIndicator.createManyAndReturn).toHaveBeenCalledWith({
+        data: [
+          {
+            indicatorValue: 'uppercase-domain.com',
+            indicatorType: 'DOMAIN',
+            severity: 'LOW',
+            confidenceScore: 0,
+            rawPayload: { source: 'test' },
+            mitreTechniques: [],
+          },
+          {
+            indicatorValue: 'user@domain.com',
+            indicatorType: 'EMAIL',
+            severity: 'LOW',
+            confidenceScore: 0,
+            rawPayload: {},
+            mitreTechniques: [],
+          },
+        ],
+        select: { id: true },
+      });
+      expect(res.status).toHaveBeenCalledWith(201);
+    });
+
+    it('should propagate database errors during batch ingestion to next(error)', async () => {
+      const req = {
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': 'test-internal-key',
+        },
+        body: {
+          indicators: [
+            { value: '1.2.3.4', type: 'IP' },
+          ],
+        },
+      };
+      const res = mockResponse();
+
+      const dbError = new Error('Database insertion failed');
+      (prisma.threatIndicator.createManyAndReturn as any).mockRejectedValueOnce(dbError);
+
+      await executeRoute('post', '/', req, res, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(dbError);
+      expect(res.status).not.toHaveBeenCalled();
+    });
   });
 
   describe('GET / (List & Filtering)', () => {
@@ -320,6 +422,138 @@ describe('Indicators Routes', () => {
           totalPages: 3,
         }
       }));
+    });
+
+    it('should support single-boundary confidence score filters (only minConfidence or only maxConfidence)', async () => {
+      // Test only minConfidence
+      const reqMin = {
+        query: { minConfidence: '50' },
+        headers: { 'x-api-key': 'test-internal-key' },
+      };
+      const resMin = mockResponse();
+
+      (prisma.threatIndicator.count as any).mockResolvedValue(5);
+      (prisma.threatIndicator.findMany as any).mockResolvedValue([]);
+
+      await executeRoute('get', '/', reqMin, resMin, mockNext);
+
+      expect(prisma.threatIndicator.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { confidenceScore: { gte: 50 } },
+      }));
+
+      // Test only maxConfidence
+      const reqMax = {
+        query: { maxConfidence: '75' },
+        headers: { 'x-api-key': 'test-internal-key' },
+      };
+      const resMax = mockResponse();
+
+      await executeRoute('get', '/', reqMax, resMax, mockNext);
+
+      expect(prisma.threatIndicator.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { confidenceScore: { lte: 75 } },
+      }));
+    });
+
+    it('should support various sortBy columns and sort orders with default pagination', async () => {
+      const sortColumns = ['indicatorValue', 'severity', 'createdAt'] as const;
+
+      for (const sortBy of sortColumns) {
+        const req = {
+          query: { sortBy, sortOrder: 'asc' },
+          headers: { 'x-api-key': 'test-internal-key' },
+        };
+        const res = mockResponse();
+
+        (prisma.threatIndicator.count as any).mockResolvedValue(10);
+        (prisma.threatIndicator.findMany as any).mockResolvedValue([]);
+
+        await executeRoute('get', '/', req, res, mockNext);
+
+        expect(prisma.threatIndicator.findMany).toHaveBeenCalledWith(expect.objectContaining({
+          orderBy: { [sortBy]: 'asc' },
+          skip: 0,
+          take: 20, // default pageSize is 20
+        }));
+      }
+    });
+
+    it('should respect maximum allowed pageSize (100) and reject pageSize exceeding 100', async () => {
+      const reqValid = {
+        query: { page: '1', pageSize: '100' },
+        headers: { 'x-api-key': 'test-internal-key' },
+      };
+      const resValid = mockResponse();
+
+      (prisma.threatIndicator.count as any).mockResolvedValue(100);
+      (prisma.threatIndicator.findMany as any).mockResolvedValue([]);
+
+      await executeRoute('get', '/', reqValid, resValid, mockNext);
+
+      expect(prisma.threatIndicator.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        skip: 0,
+        take: 100,
+      }));
+
+      // Invalid pageSize > 100 should fail schema validation with 400
+      const reqInvalid = {
+        query: { page: '1', pageSize: '101' },
+        headers: { 'x-api-key': 'test-internal-key' },
+      };
+      const resInvalid = mockResponse();
+
+      await executeRoute('get', '/', reqInvalid, resInvalid, mockNext);
+
+      expect(resInvalid.status).toHaveBeenCalledWith(400);
+      expect(resInvalid.json).toHaveBeenCalledWith(expect.objectContaining({
+        error: 'Validation Error',
+      }));
+    });
+
+    it('should propagate database error when prisma.threatIndicator.count rejects', async () => {
+      const req = {
+        query: {},
+        headers: { 'x-api-key': 'test-internal-key' },
+      };
+      const res = mockResponse();
+
+      const dbError = new Error('Database connection timed out');
+      (prisma.threatIndicator.count as any).mockRejectedValueOnce(dbError);
+
+      await executeRoute('get', '/', req, res, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(dbError);
+      expect(res.status).not.toHaveBeenCalled();
+    });
+
+    it('should reject invalid query parameters exceeding boundaries', async () => {
+      const invalidRequests = [
+        { query: { page: '0' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { pageSize: '0' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { pageSize: '101' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { minConfidence: '-5' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { maxConfidence: '105' }, headers: { 'x-api-key': 'test-internal-key' } },
+      ];
+
+      for (const req of invalidRequests) {
+        const res = mockResponse();
+        await executeRoute('get', '/', req, res, mockNext);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Validation Error' }));
+      }
+    });
+
+    it('should reject unauthenticated request to list endpoint', async () => {
+      const req = {
+        query: {},
+        headers: {},
+      };
+      const res = mockResponse();
+
+      await executeRoute('get', '/', req, res, mockNext);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
     });
   });
 
@@ -411,11 +645,53 @@ describe('Indicators Routes', () => {
 
       vi.useRealTimers();
     });
+
+    it('should reset statsPromise and allow retry when aggregation fails', async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(Date.now() + 30000); // Past cache TTL
+
+      const req = {
+        headers: { 'x-api-key': 'test-internal-key' },
+      };
+      const res1 = mockResponse();
+      const mockNextLocal = vi.fn();
+
+      const dbError = new Error('Database stats aggregation failed');
+      (prisma.threatIndicator.count as any).mockRejectedValueOnce(dbError);
+
+      const routeInfo = (indicatorsRouter as any).stack.find(
+        (layer: any) => layer.route && layer.route.path === '/stats/summary' && layer.route.methods.get
+      );
+      const handler = routeInfo.route.stack[routeInfo.route.stack.length - 1].handle;
+
+      await handler(req, res1, mockNextLocal);
+
+      expect(mockNextLocal).toHaveBeenCalledWith(dbError);
+
+      // Now verify subsequent request can retry and succeed without permanently failing
+      const res2 = mockResponse();
+      (prisma.threatIndicator.count as any).mockResolvedValueOnce(42);
+      (prisma.threatIndicator.groupBy as any)
+        .mockResolvedValueOnce([{ severity: 'HIGH', _count: { severity: 42 } }])
+        .mockResolvedValueOnce([{ indicatorType: 'IP', _count: { indicatorType: 42 } }]);
+      (prisma.threatIndicator.aggregate as any).mockResolvedValueOnce({
+        _avg: { confidenceScore: 80 },
+      });
+
+      await handler(req, res2, mockNextLocal);
+
+      expect(res2.json).toHaveBeenCalledWith(expect.objectContaining({
+        totalCount: 42,
+        averageConfidence: 80,
+      }));
+
+      vi.useRealTimers();
+    });
   });
 
   describe('GET /:id (Detail)', () => {
     it('should return indicator detail when found', async () => {
-      const uuid = '12345678-1234-1234-1234-123456789012';
+      const uuid = '12345678-1234-4234-a234-123456789012';
       const mockIndicator = {
         id: uuid,
         indicatorValue: '192.168.1.1',
@@ -454,6 +730,17 @@ describe('Indicators Routes', () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Validation Error' }));
     });
+
+    it('should reject unauthenticated request to detail endpoint', async () => {
+      const uuid = '12345678-1234-4234-a234-123456789012';
+      const req = { params: { id: uuid }, headers: {} };
+      const res = mockResponse();
+
+      await executeRoute('get', '/:id', req, res, mockNext);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
+    });
   });
 
   describe('POST /:id/enrich (Enrichment)', () => {
@@ -462,7 +749,7 @@ describe('Indicators Routes', () => {
       process.env.OPENAI_API_KEY = 'test';
 
       const req = {
-        params: { id: '12345678-1234-1234-1234-123456789012' },
+        params: { id: '12345678-1234-4234-a234-123456789012' },
         headers: {
           'x-api-key': 'test-internal-key'
         },
@@ -472,14 +759,14 @@ describe('Indicators Routes', () => {
       const res = mockResponse();
 
       (prisma.threatIndicator.findUnique as any).mockResolvedValue({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         indicatorValue: 'bad.com',
         indicatorType: 'DOMAIN',
         rawPayload: {}
       });
 
       (prisma.threatIndicator.update as any).mockResolvedValue({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         severity: 'HIGH'
       });
 
@@ -490,14 +777,14 @@ describe('Indicators Routes', () => {
       await handler(req, res, mockNext);
 
       expect(prisma.threatIndicator.update).toHaveBeenCalledWith(expect.objectContaining({
-        where: { id: '12345678-1234-1234-1234-123456789012' },
+        where: { id: '12345678-1234-4234-a234-123456789012' },
         data: expect.objectContaining({
           severity: 'HIGH'
         })
       }));
 
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         severity: 'HIGH'
       }));
     });
@@ -529,7 +816,7 @@ describe('Indicators Routes', () => {
       process.env.LLM_PROVIDER = 'openai';
 
       const req = {
-        params: { id: '12345678-1234-1234-1234-123456789012' },
+        params: { id: '12345678-1234-4234-a234-123456789012' },
         headers: { 'x-api-key': 'test-internal-key' },
         ip: '127.0.0.1',
         app: { get: () => '127.0.0.1' }
@@ -537,7 +824,7 @@ describe('Indicators Routes', () => {
       const res = mockResponse();
 
       (prisma.threatIndicator.findUnique as any).mockResolvedValue({
-        id: '12345678-1234-1234-1234-123456789012',
+        id: '12345678-1234-4234-a234-123456789012',
         indicatorValue: 'bad.com',
         indicatorType: 'DOMAIN',
         rawPayload: {}
@@ -551,6 +838,81 @@ describe('Indicators Routes', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ error: 'Enrichment service unavailable' });
+    });
+
+    it('should enrich using Anthropic provider when LLM_PROVIDER is anthropic', async () => {
+      process.env.LLM_PROVIDER = 'anthropic';
+      process.env.ANTHROPIC_API_KEY = 'sk-ant-test-key';
+
+      const req = {
+        params: { id: '12345678-1234-4234-a234-123456789012' },
+        headers: { 'x-api-key': 'test-internal-key' },
+        ip: '127.0.0.1',
+        app: { get: () => '127.0.0.1' },
+      };
+      const res = mockResponse();
+
+      (prisma.threatIndicator.findUnique as any).mockResolvedValue({
+        id: '12345678-1234-4234-a234-123456789012',
+        indicatorValue: 'anthropic-target.com',
+        indicatorType: 'DOMAIN',
+        rawPayload: { tag: 'apt' },
+      });
+
+      (prisma.threatIndicator.update as any).mockResolvedValue({
+        id: '12345678-1234-4234-a234-123456789012',
+        indicatorValue: 'anthropic-target.com',
+        severity: 'HIGH',
+      });
+
+      const routeInfo = (indicatorsRouter as any).stack.find(
+        (layer: any) => layer.route && layer.route.path === '/:id/enrich' && layer.route.methods.post
+      );
+      const handler = routeInfo.route.stack[routeInfo.route.stack.length - 1].handle;
+      await handler(req, res, mockNext);
+
+      expect(prisma.threatIndicator.update).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: '12345678-1234-4234-a234-123456789012' },
+        data: expect.objectContaining({
+          severity: 'HIGH',
+          confidenceScore: 90,
+        }),
+      }));
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        id: '12345678-1234-4234-a234-123456789012',
+      }));
+    });
+
+    it('should propagate database update failure during enrichment to next(error)', async () => {
+      process.env.LLM_PROVIDER = 'openai';
+      process.env.OPENAI_API_KEY = 'sk-test';
+
+      const req = {
+        params: { id: '12345678-1234-4234-a234-123456789012' },
+        headers: { 'x-api-key': 'test-internal-key' },
+        ip: '127.0.0.1',
+        app: { get: () => '127.0.0.1' },
+      };
+      const res = mockResponse();
+
+      (prisma.threatIndicator.findUnique as any).mockResolvedValue({
+        id: '12345678-1234-4234-a234-123456789012',
+        indicatorValue: 'failing-db.com',
+        indicatorType: 'DOMAIN',
+        rawPayload: {},
+      });
+
+      const updateError = new Error('Database write lock collision');
+      (prisma.threatIndicator.update as any).mockRejectedValueOnce(updateError);
+
+      const routeInfo = (indicatorsRouter as any).stack.find(
+        (layer: any) => layer.route && layer.route.path === '/:id/enrich' && layer.route.methods.post
+      );
+      const handler = routeInfo.route.stack[routeInfo.route.stack.length - 1].handle;
+      await handler(req, res, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(updateError);
+      expect(res.json).not.toHaveBeenCalled();
     });
   });
 });

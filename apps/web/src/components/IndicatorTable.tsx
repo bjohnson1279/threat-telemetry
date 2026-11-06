@@ -26,14 +26,17 @@ const CopyButton: React.FC<{ value: string }> = React.memo(({ value }) => {
   };
 
   return (
-    <button
-      onClick={handleCopy}
-      aria-label={copied ? 'Copied!' : `Copy indicator ${value}`}
-      title={copied ? 'Copied!' : `Copy indicator ${value}`}
-      className={`focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0 ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'}`}
-    >
-      <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
-    </button>
+    <>
+      <button
+        onClick={handleCopy}
+        aria-label={copied ? 'Copied!' : `Copy indicator ${value}`}
+        title={copied ? 'Copied!' : `Copy indicator ${value}`}
+        className={`focus-visible:opacity-100 text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 transition-opacity flex-shrink-0 ${copied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'}`}
+      >
+        <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
+      </button>
+      <span aria-live="polite" className="sr-only">{copied ? 'Copied to clipboard' : ''}</span>
+    </>
   );
 });
 
@@ -57,9 +60,16 @@ const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: Thr
       }
     }}
   >
-    <td className="p-4 font-mono max-w-[200px]" title={ind.indicatorValue}>
+    <td className="p-4 font-mono max-w-[200px]">
       <div className="flex items-center space-x-2">
-        <span className="flex-1 min-w-0 truncate">{ind.indicatorValue}</span>
+        <span
+          className="flex-1 min-w-0 truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1"
+          title={ind.indicatorValue}
+          tabIndex={0}
+          aria-label={`Full indicator value: ${ind.indicatorValue}`}
+        >
+          {ind.indicatorValue}
+        </span>
         <CopyButton value={ind.indicatorValue} />
       </div>
     </td>
@@ -67,7 +77,11 @@ const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: Thr
     <td className="p-4"><SeverityBadge severity={ind.severity} /></td>
     <td className="p-4"><ConfidenceBar confidence={ind.confidenceScore} /></td>
     <td className="p-4"><MitreTags techniques={ind.mitreTechniques} /></td>
-    <td className="p-4 text-threat-muted text-xs whitespace-nowrap">{new Date(ind.firstSeen).toLocaleDateString()}</td>
+    <td className="p-4 text-threat-muted text-xs whitespace-nowrap">
+      <time dateTime={new Date(ind.firstSeen).toISOString()} title={new Date(ind.firstSeen).toLocaleString()} tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1">
+        {new Date(ind.firstSeen).toLocaleDateString()}
+      </time>
+    </td>
     <td className="p-4 text-right">
       <button
         aria-label={`View indicator ${ind.indicatorValue}`}

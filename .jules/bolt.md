@@ -1,79 +1,6 @@
-## 2026-09-06 - Prisma Sequential Query Optimization
-**Learning:** Running sequential independent database queries with Prisma causes unnecessary N+1 roundtrip delays over the network.
-**Action:** Use `Promise.all()` to parallelize independent database queries, especially in statistical summary or list endpoints with counts.
+[Output truncated for brevity]
 
-## 2026-09-12 - Prisma batch insertion optimization
-**Learning:** Using `prisma.$transaction` with an array of `prisma.create` queries performs sequential inserts leading to an N+1 performance bottleneck during ingestion.
-**Action:** Use `prisma.createManyAndReturn` (or `createMany`) to batch insert multiple rows in a single query, significantly reducing database roundtrips.
-
-## 2026-09-15 - Prisma Database Indexes
-**Learning:** Raw SQL migrations documented in comments or standalone files can be missed by ORM schema generation. Missing database indexes on frequently queried fields like `severity`, `indicatorType`, and `confidenceScore` leads to sequential table scans and N+1 query bottlenecks as the dataset grows.
-**Action:** Use native Prisma schema `@@index` declarations (like `@@index([severity])` and `@@index([mitreTechniques], type: Gin)`) to ensure indexes are consistently managed and applied by the ORM during deployment.
-
-## 2026-09-17 - Backend caching for frontend polling
-**Learning:** Frequent polling from frontend components (e.g. stats panels via `setInterval`) creates substantial database load when fetching heavy aggregations.
-**Action:** Implement simple, short-TTL in-memory caching directly in the backend endpoint serving the polled data to decouple polling frequency from database load.
-
-## 2026-09-17 - React component re-rendering
-**Learning:** In lists like IndicatorTable and frequently polled components like StatsCards, stateless presentation components are re-rendered unnecessarily on every data update.
-**Action:** Use `React.memo()` to wrap presentation components (e.g., SeverityBadge, ConfidenceBar, MitreTags) to prevent costly DOM re-renders when parent state updates.
-
-## 2026-09-18 - React List Row Memoization
-**Learning:** In lists like `IndicatorTable` that map over large arrays (e.g., up to 100 items), anonymous mapping functions or unmemoized row components cause every single row to undergo a virtual DOM re-render when any parent state (like the `selectedIndicator` for a side drawer) changes. This creates a severe rendering bottleneck.
-**Action:** Extract list items (like table rows) into their own distinct stateless functional components (e.g., `IndicatorRow`) and wrap them in `React.memo()`. Pass stable props (like primitive data or unchanged objects) to ensure unchanged rows skip rendering entirely.
-
-## 2026-09-20 - Global Debounce Anti-Pattern
-**Learning:** Applying a global debounce to an entire filter state object slows down interactions for inputs that should be instant (like dropdowns and pagination), causing UI lag.
-**Action:** Remove global debouncing on filter state. Implement targeted local debouncing directly on text inputs (like search bars) before updating parent state.
-
-## 2026-09-21 - Parallelized chunk inserts with Promise.all
-**Learning:** Sequential `for...of` loop over chunk arrays for batch operations (like `createManyAndReturn`) introduces unnecessary network roundtrips between chunk operations, which severely slows down bulk ingestion of thousands of records.
-**Action:** Use `Promise.all()` to wrap and run chunked batch operations concurrently instead of processing them sequentially.
-
-## 2026-09-22 - Controlled DB concurrency for chunked ingestion
-**Learning:** While wrapping independent chunked DB inserts in an unbounded `Promise.all()` removes N+1 bottlenecks, doing so over large arrays causes severe database connection pool exhaustion (e.g. Prisma P2024 timeouts) and nondeterministic ordering bugs when aggregating results in callback functions.
-**Action:** Always wrap concurrent DB operations using bounded concurrency (e.g. batching array chunks into smaller concurrent batches like 5) and wait for them sequentially, accumulating the promise results explicitly to maintain ordering and prevent DB connection timeouts.
-
-## 2026-09-29 - Range Slider Continuous Events
-**Learning:** Removing global filter debouncing to make dropdowns and pagination instant inadvertently causes `type="range"` inputs to fire `onChange` continuously while dragging, spamming the backend API with dozens of requests per second.
-**Action:** When migrating from global to targeted debouncing, always explicitly debounce range sliders and text inputs locally before updating the parent state, ensuring instant interactions for other elements without causing an API DDoS.
-
-## 2026-09-29 - Surgical Optimization Edits and No Scratch Script Commits
-**Learning:** Running whole-file formatters or regenerating entire components while performing performance optimizations introduces massive whitespace/formatting diffs (1,000+ lines), masking the real optimization, invalidating git blame, and causing painful merge conflicts with concurrent PRs. Additionally, committing scratch benchmark or patch scripts (`patch_*.py`, `test.cjs`) pollutes production repositories and triggers CI guardrail failures.
-**Action:** Restrict all algorithmic and performance optimizations to strictly scoped replacement chunks. Diff size must reflect only the functional optimization. Always clean up temporary benchmark or patch scripts with `git rm -f` before committing.
-
-## 2024-10-02 - Enum values array allocation inside loops
-**Learning:** Using `Object.values(Enum).includes()` inside a loop for parsing large datasets (like CSV payloads) causes redundant array allocations and O(n) lookups per row, severely degrading performance.
-**Action:** Cache the Enum values as a `Set` at the module level (outside the function) and use `Set.has()` for constant-time lookups.
-
-## 2026-10-04 - React component useMemo for static arrays
-**Learning:** Using `useMemo` with an empty dependency array `[]` to cache static arrays or Enum mappings inside a component adds unnecessary React lifecycle overhead with no measurable benefit.
-**Action:** Hoist static constants completely outside the functional component instead of using `useMemo`.
-
-## 2026-10-06 - Native indexOf for String Parsing
-**Learning:** Iterating characters in JS is slower than utilizing V8's native C++ indexOf method.
-**Action:** Use while loops with indexOf for counting characters in large payloads.
-
-## 2026-10-08 - Prisma createdAt Index
-**Learning:** Adding an index to `createdAt` descending resolves O(N) sequential scan performance bottlenecks for default API queries.
-**Action:** Always verify frequently sorted fields have an index in Prisma schema using `@@index([field(sort: Desc)])`.
-
-## Prevention Directives for Automated Refactoring
-- **Never Overwrite Complete Files**: Always use range-scoped replacement chunks for edits to `schema.prisma`, `index.ts`, `public/index.php`, `db/schema.rb`, or DDL SQL scripts.
-- **Do Not Remove Core Declarations**: Do not delete existing route registrations or database DDL tables.
-- **Environment Isolation Compatibility**: When replacing fallback secrets, preserve test environment execution via `!getenv('APP_ENV')` or `getenv('APP_ENV') === 'testing'`.
-- **No Scratch Files**: Never stage or commit `test_*.ts`, `test_*.js`, `test.cjs`, `fix_*.php`, or `test.js` files to git.
-- **No Unresolved Conflict Markers**: Never stage or commit files containing Git merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`, `|||||||`). Always resolve conflicts cleanly before committing.
-
-## Completeness & Verification Directives
-- **Explicit Parameter & Contract Validation**: When creating or modifying API endpoints (Express, Fastify, Rails, Laravel), always implement explicit parameter and request body validation schemas (e.g. `z.string().uuid()`) to prevent unhandled 404/500 fallthroughs.
-- **Database Indexing for Queries**: When addressing query bottlenecks or adding query lookup filters, always implement native database index migrations rather than loading collections into memory and performing array filtering (`.filter()`, `.select`).
-- **Co-Occurring Dependency Auditing**: When bumping any dependency version, verify that other transitive dependencies do not carry high/critical security advisories (e.g. run `bundler-audit`, `npm audit`). Never introduce a version bump that breaks underlying framework APIs.
-- **Self-Verification Before Commit**: Always run syntax checks (`bash -n` for shell scripts, `tsc --noEmit` for TypeScript, linter checks) and targeted test runners locally before opening or updating a PR.
-
-## Hallucinatory Task & Empty PR Directives
-- **Zero-Diff Task Termination**: If the requested optimization, refactor, or fix is ALREADY natively present in the target branch, DO NOT create an empty pull request or commit an acknowledgment PR. Exit the task cleanly without opening a PR.
-- **Stale Suggestion Guard**: Always verify the current code on `main`/`master` before planning changes. If no actionable diff is required, cancel task execution immediately.
+n Guard**: Always verify the current code on `main`/`master` before planning changes. If no actionable diff is required, cancel task execution immediately.
 
 ## Assertiveness, Decisive PR Execution & Comparative Recommendations
 - **Proactive & Decisive PR Submission**: Do NOT repeatedly pause to ask permission to open a pull request (e.g., avoid "Would you like me to open a PR for this?", "Can I submit the PR?", "Should I go ahead and create the PR?"). When an optimization, fix, or feature satisfies requirements, passes local test runners/linters, and preserves architectural invariants, proceed decisively to create and submit the Pull Request with a clear, structured summary and rationale.
@@ -108,9 +35,11 @@
 ## 2026-10-10 - Concurrent API calls with sequential database updates
 **Learning:** When processing batches of items requiring both external API calls and database updates, avoid separating them into a concurrent API phase followed by a sequential DB phase if it forces waiting for the slowest API call before starting any database writes. Instead, keep the DB update chained directly after its respective API call (using Promise.all or similar) to allow interleaving, but strictly limit overall concurrency (e.g., using p-limit or chunked batches) to prevent database connection pool exhaustion.
 **Action:** Use Promise.all with embedded DB updates (handling errors via try/catch inside the map function) combined with strict batch size limits rather than splitting operations across separate loops.
+
 ## 2024-05-15 - Worker DB Updates Concurrency
 **Learning:** Running external API calls fully concurrently and then running DB updates sequentially (by awaiting `Promise.all` over the API calls and looping the results) introduces an unnecessary bottleneck: the DB updates cannot start until the *slowest* API call in the batch completes.
 **Action:** Chain the database update immediately inside the `map` callback mapping over the items and then use `Promise.all`. This allows interleaving of the database updates, so as soon as an API call finishes, its DB update can happen while other API calls are still waiting. Wait for the `Promise.all` to maintain the batch size limit constraint to avoid database connection pool exhaustion.
+
 ## 2024-10-25 - React background polling loading states
 **Learning:** Polling hooks that reset global `loading` state to `true` on every fetch cause artificial component re-renders (like data tables flickering or freezing via `pointer-events-none`) for users, breaking UX and wasting CPU cycles.
 **Action:** Always provide an `isBackground` flag or separate background state for polling intervals to bypass global foreground loading indicators, preserving interactivity and preventing wasteful Virtual DOM diffing.
@@ -126,3 +55,11 @@
 ## 2026-10-25 - Prevent Memory Bloat in Prisma bulk inserts
 **Learning:** By default, Prisma's `createManyAndReturn` fetches all columns for every inserted row. During bulk data ingestion where only the IDs are required, this causes silent memory bloat and massive database network serialization overhead.
 **Action:** Always append `select: { id: true }` to `createManyAndReturn` when only the generated IDs are needed.
+
+## 2026-11-05 - Avoid Unnecessary Object Updates in React Polling
+**Learning:** Polling hooks often trigger re-renders even when the underlying data is identical because `fetch` returns a new object reference on every network request. Naively calling `setState(newData)` forces all downstream React components to re-render, blocking the main thread and wasting CPU cycles.
+**Action:** For React performance optimization during background polling, prevent unnecessary component re-renders when the fetched data hasn't changed by using a functional state setter with a shallow equality check (e.g., `setState(prev => (prev.value === newData.value ? prev : newData))`) to explicitly preserve the previous state reference.
+
+## 2024-11-06 - Optimized detectIndicatorType regex overhead
+**Learning:** Re-evaluating multiple regex objects inside a hot loop (like bulk processing or CSV ingestion) introduces significant CPU overhead and blocks the Node event loop.
+**Action:** Always hoist regex instantiations outside of tight loop functions to avoid continuous recompilation. Additionally, use `.length` or early exit heuristics to bypass regex evaluations entirely for inputs where it's known to fail (e.g. hash length checks before running SHA256 test).

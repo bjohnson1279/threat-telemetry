@@ -22,12 +22,14 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
   useEffect(() => {
     setEnrichError(null);
     if (indicator) {
+      document.body.style.overflow = 'hidden';
       previousFocusRef.current = document.activeElement as HTMLElement;
       // Small timeout to ensure the drawer is mounted and visible before focusing
       const timer = setTimeout(() => {
         closeButtonRef.current?.focus();
       }, 10);
       return () => {
+        document.body.style.overflow = '';
         clearTimeout(timer);
         if (previousFocusRef.current) {
           previousFocusRef.current.focus();
@@ -81,16 +83,19 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
         <div className="flex items-center justify-between p-6 border-b border-threat-border bg-threat-bg/50">
           <div className="flex items-center space-x-3 pr-4 min-w-0">
             <h2 id="drawer-title" className="text-xl font-mono text-threat-text break-all">{indicator.indicatorValue}</h2>
-            <button
-              onClick={handleCopy}
-              aria-label={copied ? 'Copied indicator value!' : 'Copy indicator value'}
-              title={copied ? 'Copied indicator value!' : 'Copy indicator value'}
-              className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded p-1 flex-shrink-0"
-            >
-              <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
-            </button>
+            <>
+              <button
+                onClick={handleCopy}
+                aria-label={copied ? 'Copied indicator value!' : 'Copy indicator value'}
+                title={copied ? 'Copied indicator value!' : 'Copy indicator value'}
+                className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded p-1 flex-shrink-0"
+              >
+                <span aria-hidden="true">{copied ? '✅' : '📋'}</span>
+              </button>
+              <span aria-live="polite" className="sr-only">{copied ? 'Copied indicator value to clipboard' : ''}</span>
+            </>
           </div>
-          <button ref={closeButtonRef} onClick={onClose} aria-label="Close drawer" title="Close drawer" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0"><span aria-hidden="true">&times;</span></button>
+          <button ref={closeButtonRef} onClick={onClose} aria-label="Close drawer (Esc)" title="Close drawer (Esc)" className="text-threat-muted hover:text-threat-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded text-2xl leading-none flex-shrink-0"><span aria-hidden="true">&times;</span></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent focus-visible:ring-inset" tabIndex={0} role="region" aria-label="Indicator Details">
@@ -124,7 +129,13 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
               <span className="mr-2" aria-hidden="true">🤖</span> AI Analyst Brief
             </h3>
-            {indicator.enrichmentSummary ? (
+            {enriching ? (
+              <div className="bg-threat-bg border border-threat-border rounded-lg p-4 flex flex-col space-y-3 animate-pulse" aria-label="Generating AI Analyst Brief..." aria-busy="true">
+                <div className="h-4 bg-threat-border rounded w-3/4"></div>
+                <div className="h-4 bg-threat-border rounded w-full"></div>
+                <div className="h-4 bg-threat-border rounded w-5/6"></div>
+              </div>
+            ) : indicator.enrichmentSummary ? (
               <div className="bg-threat-bg border border-threat-border rounded-lg p-4 text-sm leading-relaxed text-threat-text/90">
                 {indicator.enrichmentSummary}
               </div>
@@ -153,14 +164,17 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           <section>
             <div className="flex items-center justify-between border-b border-threat-border mb-4 pb-2">
               <h3 id="raw-data-heading" className="text-sm font-semibold text-threat-muted uppercase tracking-wider">Raw Data</h3>
-              <button
-                onClick={handleCopyJson}
-                aria-label={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
-                title={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
-                className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 flex-shrink-0"
-              >
-                <span aria-hidden="true">{jsonCopied ? '✅' : '📋'}</span>
-              </button>
+              <>
+                <button
+                  onClick={handleCopyJson}
+                  aria-label={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
+                  title={jsonCopied ? 'Copied raw JSON data!' : 'Copy raw JSON data'}
+                  className="text-threat-muted hover:text-threat-text hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 flex-shrink-0"
+                >
+                  <span aria-hidden="true">{jsonCopied ? '✅' : '📋'}</span>
+                </button>
+                <span aria-live="polite" className="sr-only">{jsonCopied ? 'Copied raw JSON data to clipboard' : ''}</span>
+              </>
             </div>
             <div className="bg-[#0d1117] border border-threat-border rounded-lg p-4 overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent" tabIndex={0} role="region" aria-labelledby="raw-data-heading">
               <pre className="text-xs font-mono text-threat-muted">
@@ -186,7 +200,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           >
             {enriching ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
