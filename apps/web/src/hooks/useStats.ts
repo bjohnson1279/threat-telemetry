@@ -6,11 +6,26 @@ export function useStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ⚡ Bolt: [performance improvement]
+  // Bypassed unnecessary deep object comparisons or continuous state updates during background polling
+  // to prevent StatsCards from re-rendering every 15 seconds unless data actually changes.
   const load = useCallback(async () => {
     try {
       setError(null);
       const data = await fetchStats();
-      setStats(data);
+      setStats(prev => {
+        if (!prev) return data;
+        if (
+          prev.total === data.total &&
+          prev.critical === data.critical &&
+          prev.high === data.high &&
+          prev.avgConfidence === data.avgConfidence &&
+          prev.activeMitreTechniques === data.activeMitreTechniques
+        ) {
+          return prev;
+        }
+        return data;
+      });
     } catch (err: any) {
       setError(err.message || 'Failed to load stats');
     } finally {
