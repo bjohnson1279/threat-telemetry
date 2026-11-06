@@ -129,7 +129,7 @@ router.get(
         sortOrder = 'desc',
       } = req.query as any;
 
-      const where: any = {};
+      const where: Prisma.ThreatIndicatorWhereInput = {};
 
       if (search) {
         where.indicatorValue = { contains: search, mode: 'insensitive' };

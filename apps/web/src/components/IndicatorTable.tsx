@@ -77,7 +77,11 @@ const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: Thr
     <td className="p-4"><SeverityBadge severity={ind.severity} /></td>
     <td className="p-4"><ConfidenceBar confidence={ind.confidenceScore} /></td>
     <td className="p-4"><MitreTags techniques={ind.mitreTechniques} /></td>
-    <td className="p-4 text-threat-muted text-xs whitespace-nowrap">{new Date(ind.firstSeen).toLocaleDateString()}</td>
+    <td className="p-4 text-threat-muted text-xs whitespace-nowrap">
+      <time dateTime={new Date(ind.firstSeen).toISOString()} title={new Date(ind.firstSeen).toLocaleString()} tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1">
+        {new Date(ind.firstSeen).toLocaleDateString()}
+      </time>
+    </td>
     <td className="p-4 text-right">
       <button
         aria-label={`View indicator ${ind.indicatorValue}`}

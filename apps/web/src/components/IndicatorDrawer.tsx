@@ -129,7 +129,13 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
             <h3 className="text-sm font-semibold text-threat-muted uppercase tracking-wider mb-4 border-b border-threat-border pb-2 flex items-center">
               <span className="mr-2" aria-hidden="true">🤖</span> AI Analyst Brief
             </h3>
-            {indicator.enrichmentSummary ? (
+            {enriching ? (
+              <div className="bg-threat-bg border border-threat-border rounded-lg p-4 flex flex-col space-y-3 animate-pulse" aria-label="Generating AI Analyst Brief..." aria-busy="true">
+                <div className="h-4 bg-threat-border rounded w-3/4"></div>
+                <div className="h-4 bg-threat-border rounded w-full"></div>
+                <div className="h-4 bg-threat-border rounded w-5/6"></div>
+              </div>
+            ) : indicator.enrichmentSummary ? (
               <div className="bg-threat-bg border border-threat-border rounded-lg p-4 text-sm leading-relaxed text-threat-text/90">
                 {indicator.enrichmentSummary}
               </div>
@@ -194,7 +200,7 @@ export const IndicatorDrawer: React.FC<IndicatorDrawerProps> = ({ indicator, onC
           >
             {enriching ? (
               <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg aria-hidden="true" className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>

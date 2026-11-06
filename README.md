@@ -32,12 +32,12 @@ cp .env.example .env
 | --- | --- | --- | --- |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://threat_user:threat_pass_dev@127.0.0.1:5434/threat_telemetry` | Yes |
 | `INTERNAL_API_KEY` | Secret key for authenticating API requests via `x-api-key` | `dev-secret-key` | Yes |
-| `VITE_INTERNAL_API_KEY` | Frontend API key for authenticating requests sent from the web dashboard to the API | `dev-secret-key` | Yes (for web dashboard) |
 | `PORT` | Port for the API HTTP server | `8080` | No (default: `8080`) |
 | `LLM_PROVIDER` | LLM enrichment provider (`openai` or `anthropic`) | `openai` | No (default: `openai`) |
 | `OPENAI_API_KEY` | OpenAI API key for LLM threat enrichment | `sk-...` | Optional (if using OpenAI) |
 | `ANTHROPIC_API_KEY` | Anthropic API key for LLM threat enrichment | `sk-ant-...` | Optional (if using Anthropic) |
 | `FRONTEND_URL` | Allowed origin URL for CORS configuration | `http://localhost:5173` | No |
+| `VITE_INTERNAL_API_KEY` | Secret key used by the web frontend for authenticating API requests | `dev-secret-key` | No (defaults to `INTERNAL_API_KEY`) |
 
 ## Quick Start
 

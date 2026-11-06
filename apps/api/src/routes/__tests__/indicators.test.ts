@@ -525,6 +525,36 @@ describe('Indicators Routes', () => {
       expect(mockNext).toHaveBeenCalledWith(dbError);
       expect(res.status).not.toHaveBeenCalled();
     });
+
+    it('should reject invalid query parameters exceeding boundaries', async () => {
+      const invalidRequests = [
+        { query: { page: '0' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { pageSize: '0' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { pageSize: '101' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { minConfidence: '-5' }, headers: { 'x-api-key': 'test-internal-key' } },
+        { query: { maxConfidence: '105' }, headers: { 'x-api-key': 'test-internal-key' } },
+      ];
+
+      for (const req of invalidRequests) {
+        const res = mockResponse();
+        await executeRoute('get', '/', req, res, mockNext);
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Validation Error' }));
+      }
+    });
+
+    it('should reject unauthenticated request to list endpoint', async () => {
+      const req = {
+        query: {},
+        headers: {},
+      };
+      const res = mockResponse();
+
+      await executeRoute('get', '/', req, res, mockNext);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
+    });
   });
 
   describe('GET /stats/summary', () => {
@@ -699,6 +729,17 @@ describe('Indicators Routes', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Validation Error' }));
+    });
+
+    it('should reject unauthenticated request to detail endpoint', async () => {
+      const uuid = '12345678-1234-4234-a234-123456789012';
+      const req = { params: { id: uuid }, headers: {} };
+      const res = mockResponse();
+
+      await executeRoute('get', '/:id', req, res, mockNext);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ error: 'Unauthorized: Invalid or missing API key' }));
     });
   });
 
