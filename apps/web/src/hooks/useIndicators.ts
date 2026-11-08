@@ -23,9 +23,25 @@ export function useIndicators() {
       if (!isBackground) setLoading(true);
       setError(null);
       const res = await fetchIndicators(activeFilters);
-      setIndicators(res.data);
-      setTotal(res.total);
-      setTotalPages(res.totalPages);
+
+      // ⚡ Bolt: [performance improvement]
+      // Prevent unnecessary component re-renders during background polling by comparing
+      // the new data with the previous state. Explicitly preserve the previous state reference
+      // if the data is structurally identical based on 'id' and 'lastSeen'.
+      setIndicators(prev => {
+        if (prev.length !== res.data.length) return res.data;
+        let isSame = true;
+        for (let i = 0; i < prev.length; i++) {
+          if (prev[i].id !== res.data[i].id || prev[i].lastSeen !== res.data[i].lastSeen) {
+            isSame = false;
+            break;
+          }
+        }
+        return isSame ? prev : res.data;
+      });
+
+      setTotal(prev => prev === res.total ? prev : res.total);
+      setTotalPages(prev => prev === res.totalPages ? prev : res.totalPages);
     } catch (err: any) {
       setError(err.message || 'Failed to load indicators');
     } finally {

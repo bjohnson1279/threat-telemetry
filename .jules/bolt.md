@@ -129,3 +129,7 @@
 ## 2026-11-05 - Avoid Unnecessary Object Updates in React Polling
 **Learning:** Polling hooks often trigger re-renders even when the underlying data is identical because `fetch` returns a new object reference on every network request. Naively calling `setState(newData)` forces all downstream React components to re-render, blocking the main thread and wasting CPU cycles.
 **Action:** For React performance optimization during background polling, prevent unnecessary component re-renders when the fetched data hasn't changed by using a functional state setter with a shallow equality check (e.g., `setState(prev => (prev.value === newData.value ? prev : newData))`) to explicitly preserve the previous state reference.
+
+## 2024-05-16 - [Prevent Unnecessary Re-renders on Polling]
+**Learning:** `useIndicators.ts` does not check for array differences. Updating indicators with exactly identical objects (or unchanged data) during background polling causes the `IndicatorTable` to re-render. Since `IndicatorTable` is a large table with up to 100 rows, this wastes CPU cycles.
+**Action:** Replace `setIndicators(res.data)` with a functional update that compares lengths and `lastSeen` property for shallow equality.
