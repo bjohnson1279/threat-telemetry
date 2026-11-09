@@ -63,7 +63,7 @@ const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: Thr
     <td className="p-4 font-mono max-w-[200px]">
       <div className="flex items-center space-x-2">
         <span
-          className="flex-1 min-w-0 truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1"
+          className="flex-1 min-w-0 truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1 cursor-help"
           title={ind.indicatorValue}
           tabIndex={0}
           aria-label={`Full indicator value: ${ind.indicatorValue}`}
@@ -78,7 +78,7 @@ const IndicatorRow = React.memo(({ ind, index, onClick, isSelected }: { ind: Thr
     <td className="p-4"><ConfidenceBar confidence={ind.confidenceScore} /></td>
     <td className="p-4"><MitreTags techniques={ind.mitreTechniques} /></td>
     <td className="p-4 text-threat-muted text-xs whitespace-nowrap">
-      <time dateTime={new Date(ind.firstSeen).toISOString()} title={new Date(ind.firstSeen).toLocaleString()} tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1">
+      <time dateTime={new Date(ind.firstSeen).toISOString()} title={new Date(ind.firstSeen).toLocaleString()} tabIndex={0} className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded px-1 -ml-1 cursor-help">
         {new Date(ind.firstSeen).toLocaleDateString()}
       </time>
     </td>
