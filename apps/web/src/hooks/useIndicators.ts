@@ -23,7 +23,42 @@ export function useIndicators() {
       if (!isBackground) setLoading(true);
       setError(null);
       const res = await fetchIndicators(activeFilters);
-      setIndicators(res.data);
+
+      // ⚡ Bolt: [performance improvement]
+      // Preserve array item object references for structurally identical indicators during polling.
+      // Expected impact: Prevents React.memo thrashing in IndicatorTable. Only rows with actual changes
+      // (like a new enrichmentSummary or severity from the worker) will re-render, saving massive Virtual DOM diffing.
+      setIndicators(prev => {
+        if (!prev || prev.length === 0 || res.data.length === 0) return res.data;
+
+        let changed = false;
+        const next = res.data.map(newItem => {
+          const oldItem = prev.find(p => p.id === newItem.id);
+          if (
+            oldItem &&
+            oldItem.severity === newItem.severity &&
+            oldItem.confidenceScore === newItem.confidenceScore &&
+            oldItem.enrichmentSummary === newItem.enrichmentSummary &&
+            oldItem.indicatorValue === newItem.indicatorValue &&
+            oldItem.indicatorType === newItem.indicatorType &&
+            oldItem.firstSeen === newItem.firstSeen &&
+            oldItem.lastSeen === newItem.lastSeen &&
+            JSON.stringify(oldItem.mitreTechniques) === JSON.stringify(newItem.mitreTechniques)
+          ) {
+            return oldItem;
+          }
+          changed = true;
+          return newItem;
+        });
+
+        // If length changed or items order changed but ids match, it will still use old item ref.
+        // We only care if length changed or any item is actually structurally different or in different order.
+        if (!changed && prev.length === next.length && prev.every((item, i) => item === next[i])) {
+          return prev; // Entire array is identical by reference
+        }
+        return next;
+      });
+
       setTotal(res.total);
       setTotalPages(res.totalPages);
     } catch (err: any) {
