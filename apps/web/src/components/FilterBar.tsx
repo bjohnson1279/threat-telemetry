@@ -129,6 +129,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters, searc
           type="range"
           min="0"
           max="100"
+          aria-label="Filter by minimum confidence score"
           className="w-24 accent-threat-accent cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent"
           value={localMinConfidence}
           onChange={(e) => setLocalMinConfidence(parseInt(e.target.value))}
