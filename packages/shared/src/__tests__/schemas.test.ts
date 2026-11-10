@@ -112,21 +112,181 @@ describe('Schemas Validation', () => {
     expect(enrichmentResultSchema.safeParse(data).success).toBe(false);
   });
 
-  it('validates correct filter schema with boundary confidence values', () => {
-    const data = {
-      search: 'test',
-      severity: ThreatSeverity.HIGH,
-      minConfidence: 0,
-      maxConfidence: 100,
-      page: 1,
-      pageSize: 10
-    };
-    expect(threatIndicatorFilterSchema.safeParse(data).success).toBe(true);
+  describe('rawIndicatorSchema boundaries & edge cases', () => {
+    it('accepts raw indicator with exactly 1 char value and exactly 2048 chars value', () => {
+      expect(rawIndicatorSchema.safeParse({
+        value: 'x',
+        type: IndicatorType.IP_ADDRESS,
+      }).success).toBe(true);
+
+      expect(rawIndicatorSchema.safeParse({
+        value: 'a'.repeat(2048),
+        type: IndicatorType.DOMAIN,
+      }).success).toBe(true);
+    });
+
+    it('accepts exactly 100 tags and exactly 0 tags, but rejects tag longer than 256 chars', () => {
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        tags: [],
+      }).success).toBe(true);
+
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        tags: Array(100).fill('t'),
+      }).success).toBe(true);
+
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        tags: ['a'.repeat(257)],
+      }).success).toBe(false);
+
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        tags: ['a'.repeat(256)],
+      }).success).toBe(true);
+    });
+
+    it('validates source length boundary (256 valid, 257 invalid)', () => {
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        source: 's'.repeat(256),
+      }).success).toBe(true);
+
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        source: 's'.repeat(257),
+      }).success).toBe(false);
+    });
+
+    it('validates metadata and rawPayload record types', () => {
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        metadata: { key1: 'value1', key2: 123, key3: true, key4: { nested: 'obj' }, key5: [1, 2] },
+        rawPayload: { rawKey: 'rawValue' },
+      }).success).toBe(true);
+
+      // Non-object metadata
+      expect(rawIndicatorSchema.safeParse({
+        value: '1.1.1.1',
+        type: IndicatorType.IP_ADDRESS,
+        metadata: 'not-an-object' as any,
+      }).success).toBe(false);
+    });
   });
 
-  it('rejects invalid filter schema confidence range', () => {
-    const data = { minConfidence: 150 };
-    expect(threatIndicatorFilterSchema.safeParse(data).success).toBe(false);
+  describe('ingestPayloadSchema boundaries', () => {
+    it('accepts boundary array size: exactly 1 and exactly 10,000 indicators', () => {
+      expect(ingestPayloadSchema.safeParse({
+        indicators: [{ value: '1.1.1.1', type: IndicatorType.IP_ADDRESS }],
+      }).success).toBe(true);
+
+      expect(ingestPayloadSchema.safeParse({
+        indicators: Array(10000).fill({ value: '1.1.1.1', type: IndicatorType.IP_ADDRESS }),
+      }).success).toBe(true);
+    });
+  });
+
+  describe('enrichmentResultSchema boundaries & edge cases', () => {
+    it('accepts boundary confidence scores (0 and 100) and rejects non-integer or out of bounds', () => {
+      const base = {
+        severity: ThreatSeverity.LOW,
+        mitreTechniques: ['T1566'],
+        analystBrief: 'Valid analyst brief summary.',
+      };
+
+      expect(enrichmentResultSchema.safeParse({ ...base, confidenceScore: 0 }).success).toBe(true);
+      expect(enrichmentResultSchema.safeParse({ ...base, confidenceScore: 100 }).success).toBe(true);
+      expect(enrichmentResultSchema.safeParse({ ...base, confidenceScore: -1 }).success).toBe(false);
+      expect(enrichmentResultSchema.safeParse({ ...base, confidenceScore: 101 }).success).toBe(false);
+      expect(enrichmentResultSchema.safeParse({ ...base, confidenceScore: 50.5 }).success).toBe(false);
+    });
+
+    it('accepts analystBrief boundary lengths (10 and 500 chars) and rejects 9 and 501 chars', () => {
+      const base = {
+        severity: ThreatSeverity.LOW,
+        confidenceScore: 50,
+        mitreTechniques: ['T1566'],
+      };
+
+      expect(enrichmentResultSchema.safeParse({ ...base, analystBrief: 'a'.repeat(10) }).success).toBe(true);
+      expect(enrichmentResultSchema.safeParse({ ...base, analystBrief: 'a'.repeat(500) }).success).toBe(true);
+      expect(enrichmentResultSchema.safeParse({ ...base, analystBrief: 'a'.repeat(9) }).success).toBe(false);
+      expect(enrichmentResultSchema.safeParse({ ...base, analystBrief: 'a'.repeat(501) }).success).toBe(false);
+    });
+
+    it('strictly tests MITRE ATT&CK technique regex boundaries', () => {
+      const base = {
+        severity: ThreatSeverity.CRITICAL,
+        confidenceScore: 90,
+        analystBrief: 'Valid analyst brief summary.',
+      };
+
+      // Valid: T + 4 digits, optional dot + 3 digits
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T1059', 'T1059.001', 'T1566.002'] }).success).toBe(true);
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: [] }).success).toBe(true);
+
+      // Invalid technique IDs
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['t1059'] }).success).toBe(false); // lowercase
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T105'] }).success).toBe(false); // 3 digits
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T10599'] }).success).toBe(false); // 5 digits
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T1059.1'] }).success).toBe(false); // 1 subtechnique digit
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T1059.01'] }).success).toBe(false); // 2 subtechnique digits
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T1059.0001'] }).success).toBe(false); // 4 subtechnique digits
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['T1059.abc'] }).success).toBe(false); // non-digits
+      expect(enrichmentResultSchema.safeParse({ ...base, mitreTechniques: ['TA0001'] }).success).toBe(false); // tactic ID
+    });
+  });
+
+  describe('threatIndicatorFilterSchema boundaries & edge cases', () => {
+    it('validates correct filter schema with boundary confidence values', () => {
+      const data = {
+        search: 'test',
+        severity: ThreatSeverity.HIGH,
+        minConfidence: 0,
+        maxConfidence: 100,
+        page: 1,
+        pageSize: 10
+      };
+      expect(threatIndicatorFilterSchema.safeParse(data).success).toBe(true);
+    });
+
+    it('rejects invalid filter schema confidence range', () => {
+      expect(threatIndicatorFilterSchema.safeParse({ minConfidence: 150 }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ minConfidence: -1 }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ maxConfidence: 101 }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ maxConfidence: -5 }).success).toBe(false);
+    });
+
+    it('validates pagination boundaries (page min 1, pageSize min 1 max 100)', () => {
+      expect(threatIndicatorFilterSchema.safeParse({ page: 1, pageSize: 1 }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ page: 1000, pageSize: 100 }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ page: 0 }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ page: -1 }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ pageSize: 0 }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ pageSize: 101 }).success).toBe(false);
+    });
+
+    it('validates search max length (256 chars)', () => {
+      expect(threatIndicatorFilterSchema.safeParse({ search: 's'.repeat(256) }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ search: 's'.repeat(257) }).success).toBe(false);
+    });
+
+    it('validates sortBy and sortOrder enums', () => {
+      expect(threatIndicatorFilterSchema.safeParse({ sortBy: 'createdAt', sortOrder: 'asc' }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ sortBy: 'confidenceScore', sortOrder: 'desc' }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ sortBy: 'severity' }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ sortBy: 'indicatorValue' }).success).toBe(true);
+      expect(threatIndicatorFilterSchema.safeParse({ sortBy: 'invalidColumn' as any }).success).toBe(false);
+      expect(threatIndicatorFilterSchema.safeParse({ sortOrder: 'sideways' as any }).success).toBe(false);
+    });
   });
 
   describe('parseCSVPayload', () => {
@@ -193,6 +353,44 @@ describe('Schemas Validation', () => {
       const parsed = parseCSVPayload(csv);
       expect(parsed.length).toBe(1);
       expect(parsed[0].value).toBe('valid3.com');
+    });
+
+    it('handles boundary field max lengths (value=2048, source=256, tags=10000)', () => {
+      const maxVal = 'a'.repeat(2048);
+      const maxSrc = 'b'.repeat(256);
+      const maxTags = 'c'.repeat(10000);
+      const csv = `value,type,source,tags\n${maxVal},DOMAIN,${maxSrc},${maxTags}`;
+      const parsed = parseCSVPayload(csv);
+      expect(parsed.length).toBe(1);
+      expect(parsed[0].value).toBe(maxVal);
+      expect(parsed[0].source).toBe(maxSrc);
+      expect(parsed[0].tags).toEqual([maxTags]);
+    });
+
+    it('handles multiple semi-colon delimited tags in CSV', () => {
+      const csv = `value,type,tags\n1.2.3.4,IP_ADDRESS,c2;malware;trojan;apt28`;
+      const parsed = parseCSVPayload(csv);
+      expect(parsed.length).toBe(1);
+      expect(parsed[0].tags).toEqual(['c2', 'malware', 'trojan', 'apt28']);
+    });
+
+    it('handles all valid IndicatorType enum values in CSV', () => {
+      const types = Object.values(IndicatorType);
+      const rows = types.map((t, idx) => `item${idx}.org,${t}`).join('\n');
+      const csv = `value,type\n${rows}`;
+      const parsed = parseCSVPayload(csv);
+      expect(parsed.length).toBe(types.length);
+      for (let i = 0; i < types.length; i++) {
+        expect(parsed[i].type).toBe(types[i]);
+      }
+    });
+
+    it('handles extra or unrecognized columns in CSV gracefully', () => {
+      const csv = `id,value,comment,type,extra\n999,10.10.10.10,suspicious,IP_ADDRESS,ignored`;
+      const parsed = parseCSVPayload(csv);
+      expect(parsed.length).toBe(1);
+      expect(parsed[0].value).toBe('10.10.10.10');
+      expect(parsed[0].type).toBe(IndicatorType.IP_ADDRESS);
     });
   });
 });
