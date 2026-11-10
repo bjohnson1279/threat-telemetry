@@ -10,7 +10,7 @@ export const MitreTags: React.FC<{ techniques?: string[] }> = React.memo(({ tech
 
   return (
     <div
-      className="flex flex-wrap gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded"
+      className="flex flex-wrap gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-threat-accent rounded cursor-help"
       title={techniques.join(', ')}
       tabIndex={0}
       aria-label={`View all ${techniques.length} MITRE techniques: ${techniques.join(', ')}`}
