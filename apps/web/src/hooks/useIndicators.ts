@@ -43,7 +43,8 @@ export function useIndicators() {
             oldItem.indicatorType === newItem.indicatorType &&
             oldItem.firstSeen === newItem.firstSeen &&
             oldItem.lastSeen === newItem.lastSeen &&
-            JSON.stringify(oldItem.mitreTechniques) === JSON.stringify(newItem.mitreTechniques)
+            oldItem.mitreTechniques.length === newItem.mitreTechniques.length &&
+            oldItem.mitreTechniques.every((val, index) => val === newItem.mitreTechniques[index])
           ) {
             return oldItem;
           }
